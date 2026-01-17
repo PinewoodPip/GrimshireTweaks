@@ -16,6 +16,7 @@ public class Plugin : BaseUnityPlugin
 
     static int LATE_WARNING_HOUR = 20;
     static int LATE_WARNING_MINUTE = 0;
+    static Color AVAILABLE_COLLECTION_ITEM_COLOR = new Color(0f, 0f, 0f, 0.8f);
 
     // These characters are hardcoded to always have service dialogue.
     static HashSet<string> NPCS_WITH_SERVICE_DIALOGUE = new HashSet<string>
@@ -30,6 +31,44 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} is loaded!");
 
         Harmony.CreateAndPatchAll(typeof(Plugin));
+    }
+
+    // Highlight fish, seeds & critters in collections menu that are unobtained but currently available (ie. in season)
+    [HarmonyPatch(typeof(CollectionSlotPanel), "SetupFish")]
+    [HarmonyPostfix]
+    static void HighlightAvailableFish(CollectionSlotPanel __instance, InventoryItem item, CollectionsMenu parent)
+    {
+        if (!__instance.isDiscovered && item is Fish fish)
+        {
+            if (fish.IsFishAvailable(TimeControl.Instance.CurrentDate.Season, TimeControl.Instance.CurrentDate.Day))
+            {
+                __instance.itemImage.color = AVAILABLE_COLLECTION_ITEM_COLOR;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(CollectionSlotPanel), "SetupPlant")]
+    [HarmonyPostfix]
+    static void HighlightAvailableSeed(CollectionSlotPanel __instance, Seeds seed, CollectionsMenu parent)
+    {
+        if (!__instance.isDiscovered)
+        {
+            if (seed.DateRange().IsDateInRange(TimeControl.Instance.CurrentDate.Season, TimeControl.Instance.CurrentDate.Day))
+            {
+                __instance.itemImage.color = AVAILABLE_COLLECTION_ITEM_COLOR;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(CollectionSlotPanel), "SetupCritter")]
+    [HarmonyPostfix]
+    static void HighlightAvailableCritter(CollectionSlotPanel __instance, CritterData critter, CollectionsMenu parent)
+    {
+        if (!__instance.isDiscovered)
+        {
+            if (critter.IfInSeason())
+            {
+                __instance.itemImage.color = AVAILABLE_COLLECTION_ITEM_COLOR;
+            }
+        }
     }
     
     // Show notification when it's getting late in the day (so you don't forget to sleep lmao happened to me once)
