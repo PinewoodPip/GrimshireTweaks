@@ -188,6 +188,39 @@ public class Plugin : BaseUnityPlugin
         }
     }
 
+    // Invert toolbar and pause menu tab bar scroll directions
+    [HarmonyPatch(typeof(ToolBarUI), "ChangeSelection")]
+    [HarmonyPrefix]
+    static bool InvertToolbarScrollDirection(ToolBarUI __instance, ref int direction)
+    {
+        direction = -direction;
+        return true;
+    }
+    [HarmonyPatch(typeof(UIController), "ScrollForward")]
+    [HarmonyPrefix]
+    static bool UIScrollForward(UIController __instance)
+    {
+        UIMenuBase uimenuBase = GetField<UIMenuBase>(__instance, "currentMenu");
+        if (uimenuBase == null || uimenuBase.ParentMenu == null || uimenuBase.ParentMenu is not PauseMenu)
+        {
+            return true;
+        }
+        uimenuBase.ParentMenu.PrevPage();
+        return false;
+    }
+    [HarmonyPatch(typeof(UIController), "ScrollBackward")]
+    [HarmonyPrefix]
+    static bool UIScrollBackward(UIController __instance)
+    {
+        UIMenuBase uimenuBase = GetField<UIMenuBase>(__instance, "currentMenu");
+        if (uimenuBase == null || uimenuBase.ParentMenu == null || uimenuBase.ParentMenu is not PauseMenu)
+        {
+            return true;
+        }
+        uimenuBase.ParentMenu.NextPage();
+        return false;
+    }
+
     // Show notification when it's getting late in the day (so you don't forget to sleep lmao happened to me once)
     [HarmonyPatch(typeof(TimeCompassUI), "SetTimeText")]
     [HarmonyPrefix]
