@@ -7,6 +7,7 @@ using TMPro;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using static GrimshireTweaks.Utils;
 
 namespace GrimshireTweaks;
 
@@ -40,6 +41,7 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} is loaded!");
 
         Harmony.CreateAndPatchAll(typeof(Plugin));
+        Harmony.CreateAndPatchAll(typeof(GiftItemTooltips));
     }
 
     // Optimize object placement checks
@@ -329,31 +331,5 @@ public class Plugin : BaseUnityPlugin
     {
         __instance.Invoke("LoadMainMenu", 0.5f); // Needs a delay to avoid a race condition with settings loading
         return false;
-    }
-
-    // Utility method to read private fields.
-    static T GetField<T>(object obj, string fieldName)
-    {
-        var field = Traverse.Create(obj).Field(fieldName);
-        return field.GetValue<T>();
-    }
-
-    // Utility method to write private fields.
-    static void SetField<T>(object obj, string fieldName, T value)
-    {
-        var field = Traverse.Create(obj).Field(fieldName);
-        field.SetValue(value);
-    }
-
-    // Utility method to call private methods.
-    static T CallMethod<T>(object obj, string methodName, params object[] parameters)
-    {
-        var method = Traverse.Create(obj).Method(methodName, parameters);
-        return method.GetValue<T>();
-    }
-    static void CallMethod(object obj, string methodName, params object[] parameters)
-    {
-        var method = Traverse.Create(obj).Method(methodName, parameters);
-        method.GetValue();
     }
 }
