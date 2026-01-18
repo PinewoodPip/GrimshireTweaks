@@ -118,7 +118,7 @@ public class Plugin : BaseUnityPlugin
 
         // For each ingredient the recipe requires
         foreach (IngredientOption option in ingredOptions)
-		{
+        {
             if (!option.gameObject.activeSelf) continue; // Skip unused ingredient slots
 
             Logger.LogInfo($"Finding best ingredient for category {option.requiredFoodCategoryType}, item {option.requiredFoodItem?.Label}");
@@ -126,11 +126,11 @@ public class Plugin : BaseUnityPlugin
             // Find the valid ingredient in the player's inventory that restores the least stamina
             float lowestStamina = float.MaxValue;
             int bestIndex = -1;
-			for (int i = 0; i < playerInventory.Items.Length; i++)
-			{
+            for (int i = 0; i < playerInventory.Items.Length; i++)
+            {
                 InventoryItem item = playerInventory[i].itemReference;
-				if (item != null && ((option.requiredFoodCategoryType != FoodCategoryType.None && option.requiredFoodCategoryType == item.FoodCategoryType) || option.requiredFoodItem == item))
-				{
+                if (item != null && ((option.requiredFoodCategoryType != FoodCategoryType.None && option.requiredFoodCategoryType == item.FoodCategoryType) || option.requiredFoodItem == item))
+                {
                     float staminaValue = (item.PlayerDietCaloricValue + item.CaloricValue) / 2f; // Use average of player & villager stamina values
                     if (staminaValue < lowestStamina)
                     {
@@ -138,15 +138,15 @@ public class Plugin : BaseUnityPlugin
                         lowestStamina = staminaValue;
                         bestIndex = i;
                     }
-				}
-			}
+                }
+            }
             // Select the item
             if (bestIndex != -1)
             {
                 option.SelectItemFromPlayerInv(playerInventory[bestIndex].itemReference, bestIndex);
             }
-		}
-		ui.CheckIfAllIngredSelected();
+        }
+        ui.CheckIfAllIngredSelected();
         return false; // Skip original method
     }
 
@@ -193,8 +193,8 @@ public class Plugin : BaseUnityPlugin
     [HarmonyPrefix]
     static bool ShowLateNotification()
     {
-		int hours = (int)TimeControl.Instance.Minutes / 60;
-		int minutes = (int)TimeControl.Instance.Minutes % 60;
+        int hours = (int)TimeControl.Instance.Minutes / 60;
+        int minutes = (int)TimeControl.Instance.Minutes % 60;
         if (hours == LATE_WARNING_HOUR && minutes == LATE_WARNING_MINUTE)
         {
             GameManager.Instance.PopUpDialogBox.DisplayMsg("It's getting late...", 2f);
@@ -242,7 +242,7 @@ public class Plugin : BaseUnityPlugin
             textField.text += $"\nComposter Value: {compostValue}";
         }
     }
-    [HarmonyPatch(typeof(ItemDetailsPanel), "UpdateDetailsDisplay", new Type[] {typeof(InventoryItem), typeof(float)})] // Inventory tab
+    [HarmonyPatch(typeof(ItemDetailsPanel), "UpdateDetailsDisplay", new Type[] { typeof(InventoryItem), typeof(float) })] // Inventory tab
     [HarmonyPostfix]
     static void ShowComposterValueInInventory(ItemDetailsPanel __instance, InventoryItem itemRef, float slotSpoilageAmount)
     {
