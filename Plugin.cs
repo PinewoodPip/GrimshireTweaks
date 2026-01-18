@@ -46,6 +46,7 @@ public class Plugin : BaseUnityPlugin
         Harmony.CreateAndPatchAll(typeof(DialogDismissHotkey));
         Harmony.CreateAndPatchAll(typeof(ShortenInputCooldowns));
         Harmony.CreateAndPatchAll(typeof(CraftFromContainers));
+        Harmony.CreateAndPatchAll(typeof(PluginVersionDisplay));
     }
 
     // Optimize object placement checks
