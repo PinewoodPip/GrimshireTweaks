@@ -275,6 +275,27 @@ public class Plugin : BaseUnityPlugin
         return true;
     }
 
+    // Show habitat hint for undiscovered fish in collections menu,
+    // as well as weather conditions
+    // Note: Fish class has weather & time conditions as well,
+    // however these appear to be unused currently;
+    // they're set to "any weather" and "all day" for all fish
+    [HarmonyPatch(typeof(CollectionsMenu), "UpdateDetailsPanel")]
+    [HarmonyPostfix]
+    static void ShowFishHabitatHint(CollectionsMenu __instance, UIOption option)
+    {
+        CollectionSlotPanel panel = option.GetComponent<CollectionSlotPanel>();
+        InventoryItem item = panel.itemRef;
+        if (item is not Fish fish) return;
+        TextMeshProUGUI fishTTHabitat = GetField<TextMeshProUGUI>(__instance, "fishTTHabitat");
+
+        // Show habitat for undiscovered fish
+        if (!panel.isDiscovered)
+        {
+			fishTTHabitat.text = "Habitat: " + fish.Habitat.ToString();
+        }
+    }
+
     // Show composter value in item tooltips
     [HarmonyPatch(typeof(ItemInfoDisplay), "Display")] // Tooltips (ex. in hotbar)
     [HarmonyPostfix]
@@ -324,6 +345,7 @@ public class Plugin : BaseUnityPlugin
         field.SetValue(value);
     }
 
+    // Utility method to call private methods.
     static T CallMethod<T>(object obj, string methodName, params object[] parameters)
     {
         var method = Traverse.Create(obj).Method(methodName, parameters);
