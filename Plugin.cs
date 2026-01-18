@@ -42,6 +42,7 @@ public class Plugin : BaseUnityPlugin
 
         Harmony.CreateAndPatchAll(typeof(Plugin));
         Harmony.CreateAndPatchAll(typeof(GiftItemTooltips));
+        Harmony.CreateAndPatchAll(typeof(AutoToggleRunning));
     }
 
     // Optimize object placement checks
