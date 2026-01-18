@@ -44,6 +44,7 @@ public class Plugin : BaseUnityPlugin
         Harmony.CreateAndPatchAll(typeof(GiftItemTooltips));
         Harmony.CreateAndPatchAll(typeof(AutoToggleRunning));
         Harmony.CreateAndPatchAll(typeof(DialogDismissHotkey));
+        Harmony.CreateAndPatchAll(typeof(ShortenInputCooldowns));
     }
 
     // Optimize object placement checks
