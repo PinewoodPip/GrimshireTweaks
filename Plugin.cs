@@ -1,5 +1,8 @@
 ﻿
+using System;
+using System.Collections.Generic;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using BepInEx.Unity.Mono;
 using HarmonyLib;
@@ -11,27 +14,137 @@ public class Plugin : BaseUnityPlugin
 {
     internal static new ManualLogSource Logger;
 
+    // Utility class for associating a feature with a bool config setting.
+    class ToggleableFeature
+    {
+        internal Type patchClass;
+        internal ConfigEntry<bool> enabledSetting;
+
+        public bool enabled => enabledSetting.Value;
+
+        public ToggleableFeature(Type patchClass, ConfigEntry<bool> enabledSetting)
+        {
+            this.patchClass = patchClass;
+            this.enabledSetting = enabledSetting;
+        }
+    }
+
+    private List<ToggleableFeature> toggleableFeatures; // Initialized in Awake()
+
     private void Awake()
     {
         Logger = base.Logger;
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} is loaded!");
 
+        // Define settings
+        toggleableFeatures = new List<ToggleableFeature>()
+        {
+            // ------------
+            // QoL features
+            // ------------
+            new(typeof(GiftItemTooltips), Config.Bind(
+                "QualityOfLife",
+                "GiftItemTooltips",
+                true,
+                "Makes giftable items show who likes the item in their tooltip, if you've discovered who likes the item"
+            )),
+            new(typeof(DialogDismissHotkey), Config.Bind(
+                "QualityOfLife",
+                "DialogDismissHotkey",
+                true,
+                "Allows you to select dialogue choices like \"Nevermind\" or \"No\" with the Esc key"
+            )),
+            new(typeof(CraftFromContainers), Config.Bind(
+                "QualityOfLife",
+                "CraftFromContainers",
+                true,
+                "Allows the crafting workbench to use ingredients from chests on your farm"
+            )),
+            new(typeof(DailyDialogueIndicator), Config.Bind(
+                "QualityOfLife",
+                "DailyDialogueIndicator",
+                false,
+                "Shows a speech bubble for villagers you haven't spoken to today yet"
+            )),
+            new(typeof(ComposterValueDisplay), Config.Bind(
+                "QualityOfLife",
+                "ComposterValueDisplay",
+                true,
+                "Shows compost quality value in tooltips for compostable items"
+            )),
+            new(typeof(EfficientAutoCook), Config.Bind(
+                "QualityOfLife",
+                "EfficientAutoCook",
+                true,
+                "Makes the cooking UI prioritize pulling ingredients with lowest stamina value"
+            )),
+            new(typeof(CollectionLogTweaks), Config.Bind(
+                "QualityOfLife",
+                "CollectionLogTweaks",
+                true,
+                "Highlights unobtained fish/critters/seeds that are currently in season in the collection log"
+            )),
+            new(typeof(LateNotification), Config.Bind(
+                "QualityOfLife",
+                "LateNotification",
+                false,
+                "Shows an \"It's getting late...\" notification when the clock hits 10PM"
+            )),
+
+            // ------------
+            // Customization & misc tweaks
+            // ------------
+            new(typeof(InvertScrollDirections), Config.Bind(
+                "MiscCustomization",
+                "InvertScrollDirections",
+                false,
+                "Inverts the toolbar scroll direction, such that scrolling down moves to the slot on the right"
+            )),
+            new(typeof(ShortenInputCooldowns), Config.Bind(
+                "MiscCustomization",
+                "ShortenInputCooldowns",
+                false,
+                "Reduces the cooldown for left-clicking in UIs"
+            )),
+            new(typeof(AutoToggleRunning), Config.Bind(
+                "MiscCustomization",
+                "AutoToggleRunning",
+                false,
+                "Makes the player default to running instead of walking"
+            )),
+            new(typeof(SkipSplashScreen), Config.Bind(
+                "MiscCustomization",
+                "SkipSplashScreen",
+                false,
+                "Skips the splash screen on game launch"
+            )),
+
+            // ------------
+            // Fixes
+            // ------------
+            new(typeof(OptimizeObjectPlacement), Config.Bind(
+                "Fixes",
+                "OptimizeObjectPlacement",
+                true,
+                "Optimizes the code for placing objects, reducing lag that occurs when placing objects like tree seeds"
+            )),
+            new(typeof(FixToolbarWorldInteraction), Config.Bind(
+                "Fixes",
+                "FixToolbarWorldInteraction",
+                true,
+                "Prevents left-click from interacting with the world while the cursor is over toolbar slots"
+            )),
+        };
+
         // Load features & patches
-        Harmony.CreateAndPatchAll(typeof(GiftItemTooltips));
-        Harmony.CreateAndPatchAll(typeof(AutoToggleRunning));
-        Harmony.CreateAndPatchAll(typeof(DialogDismissHotkey));
-        Harmony.CreateAndPatchAll(typeof(ShortenInputCooldowns));
-        Harmony.CreateAndPatchAll(typeof(CraftFromContainers));
         Harmony.CreateAndPatchAll(typeof(PluginVersionDisplay));
-        Harmony.CreateAndPatchAll(typeof(DailyDialogueIndicator));
-        Harmony.CreateAndPatchAll(typeof(ComposterValueDisplay));
-        Harmony.CreateAndPatchAll(typeof(OptimizeObjectPlacement));
-        Harmony.CreateAndPatchAll(typeof(EfficientAutoCook));
-        Harmony.CreateAndPatchAll(typeof(CollectionLogTweaks));
-        Harmony.CreateAndPatchAll(typeof(InvertScrollDirections));
-        Harmony.CreateAndPatchAll(typeof(LateNotification));
-        Harmony.CreateAndPatchAll(typeof(MiscTweaks));
-        Harmony.CreateAndPatchAll(typeof(FixToolbarWorldInteraction));
-        Harmony.CreateAndPatchAll(typeof(SkipSplashScreen));
+        foreach (var feature in toggleableFeatures)
+        {
+            if (feature.enabled)
+            {
+                Logger.LogInfo($"Enabling feature {feature.patchClass.Name}");
+                Harmony.CreateAndPatchAll(feature.patchClass);
+            }
+        }
     }
 }

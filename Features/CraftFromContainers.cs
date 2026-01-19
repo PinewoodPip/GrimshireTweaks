@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
-using Yarn.Unity;
 using static GrimshireTweaks.Utils;
 
 namespace GrimshireTweaks;
