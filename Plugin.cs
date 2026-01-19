@@ -16,7 +16,7 @@ public class Plugin : BaseUnityPlugin
 {
     internal static new ManualLogSource Logger;
 
-    static int LATE_WARNING_HOUR = 20;
+    static int LATE_WARNING_HOUR = 22;
     static int LATE_WARNING_MINUTE = 0;
     static Color AVAILABLE_COLLECTION_ITEM_COLOR = new Color(0f, 0f, 0f, 0.8f);
 
@@ -27,12 +27,6 @@ public class Plugin : BaseUnityPlugin
     }
     static ConditionalWeakTable<SquareBoundsChecker, SquareBoundsCheckerMixin> squareBoundsCheckerMixinStates = new ConditionalWeakTable<SquareBoundsChecker, SquareBoundsCheckerMixin>();
     static Collider2D[] squareBoundsCheckerCollisionResults = new Collider2D[1];
-
-    // These characters are hardcoded to always have service dialogue.
-    static HashSet<string> NPCS_WITH_SERVICE_DIALOGUE = new HashSet<string>
-    {
-        "Rowan", "Gruff", "Wilfred", "Kai", "Percy", "Logan", "Tano"
-    };
 
     private void Awake()
     {
@@ -251,13 +245,13 @@ public class Plugin : BaseUnityPlugin
     static bool PreventInteractOverToolbar(PlayerController __instance)
     {
 		ToolBarUI toolBarUI = FindObjectOfType<ToolBarUI>();
+        if (toolBarUI == null) return true; // Happens during cutscenes
         RectTransform rectTransform = toolBarUI.transform.Find("Horizontal Laoyut").GetComponent<RectTransform>(); // This gameobject has a larger rect than the parent toolbar, as it's where the BG image is. "Laoyut" typo is from the game
         bool isPointerOver = RectTransformUtility.RectangleContainsScreenPoint(rectTransform, Input.mousePosition, null);
         return toolBarUI.gameObject.activeInHierarchy && !isPointerOver;
     }
 
-    // Show habitat hint for undiscovered fish in collections menu,
-    // as well as weather conditions
+    // Show habitat hint for undiscovered fish in collections menu
     // Note: Fish class has weather & time conditions as well,
     // however these appear to be unused currently;
     // they're set to "any weather" and "all day" for all fish

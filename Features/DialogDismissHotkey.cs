@@ -13,6 +13,7 @@ public static class DialogDismissHotkey
     [
         "never mind", // Used by dialogues.
         "nevermind", // Used by beds.
+        "no.",
 
         // I don't think the following are used, but just in case :P
         "cancel",
