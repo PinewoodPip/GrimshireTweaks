@@ -13,7 +13,7 @@ public static class ComposterValueDisplay
     static void ShowComposterValue(ItemInfoDisplay __instance, bool enabled, InventoryItem itemRef, float itemSpoilage, RectTransform parent)
     {
         if (itemRef == null) return;
-        var compostValue = itemRef.compostValue;
+        var compostValue = GetCompostValue(itemRef);
         if (compostValue > 0f)
         {
             var textField = GetField<TextMeshProUGUI>(__instance, "infoTMP");
@@ -25,11 +25,31 @@ public static class ComposterValueDisplay
     static void ShowComposterValueInInventory(ItemDetailsPanel __instance, InventoryItem itemRef, float slotSpoilageAmount)
     {
         if (itemRef == null) return;
-        var compostValue = itemRef.compostValue;
+        var compostValue = GetCompostValue(itemRef);
         if (compostValue > 0f)
         {
             var textField = GetField<TextMeshProUGUI>(__instance, "descTMP");
             textField.text += $"\n\nCompost quality: {compostValue}";
         }
+    }
+
+    // Returns the compost value for an item (ignoring stack amount)
+    // Logic from `CompostBinProcessor.GetCompostBasedOnStoredValue()`
+    public static float GetCompostValue(InventoryItem item)
+    {
+        float value = 0f;
+        if (item.compostValue > 0f)
+        {
+            value += item.compostValue;
+        }
+        else if (item.IsEdible())
+        {
+            value += item.CaloricValue * 0.3f;
+        }
+        else if (item.BurnValue > 0)
+        {
+            value += item.BurnValue * 0.3f;
+        }
+        return value;
     }
 }
