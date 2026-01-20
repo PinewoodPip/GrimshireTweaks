@@ -13,6 +13,7 @@ The mod currently targets game version **v0.28.1**; beta versions are untested (
 
 - Download the latest version from [the releases page](https://github.com/PinewoodPip/GrimshireTweaks/releases)
 - Extract the contents of the zip to the game folder *(right-click Grimshire in your Steam library -> "Manage" -> "Browse local files")*
+    - The included BepInEx is a modloader for Unity, you can alternatively get it from [their repo](https://github.com/BepInEx/BepInEx); the additional shipped `.dlls` are unstripped assemblies from Unity required for it to run with Grimshire
     - If you already had BepInEx installed, you only need to copy `GrimshireTweaks.dll` file to `\Grimshire\BepInEx\plugins\`
 
 If you've done everything properly, after launching the game you should see the plugin name & version in the title screen by the settings button:
@@ -44,7 +45,7 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 
     ![Collection log changes.](docs/images/highlight_available_fish.png)
 
-- Compostable items can show their compost quality value in tooltips:
+- Compostable items can show their compost quality value in the inventory and tooltips *(while the composter UI is open)*:
 
     ![Compost quality in tooltip.](docs/images/composter_value_display.png)
 

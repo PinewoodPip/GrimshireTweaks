@@ -8,11 +8,17 @@ using static GrimshireTweaks.Utils;
 public static class ComposterValueDisplay
 {
     // Show composter value in item tooltips
+    // while the composter UI is open (only there since the tooltip space is highly limited)
     [HarmonyPatch(typeof(ItemInfoDisplay), "Display")] // Tooltips (ex. in hotbar)
     [HarmonyPostfix]
     static void ShowComposterValue(ItemInfoDisplay __instance, bool enabled, InventoryItem itemRef, float itemSpoilage, RectTransform parent)
     {
         if (itemRef == null) return;
+        CompostBinMenu composterMenu = UnityEngine.Object.FindObjectOfType<CompostBinMenu>();
+        bool isComposterOpen = composterMenu != null && GetField<GameObject>(composterMenu, "myDisplay").activeInHierarchy;
+        if (!isComposterOpen) return;
+
+        // Add compost value label
         var compostValue = GetCompostValue(itemRef);
         if (compostValue > 0f)
         {
@@ -20,7 +26,9 @@ public static class ComposterValueDisplay
             textField.text += $"\nCompost quality: {compostValue}";
         }
     }
-    [HarmonyPatch(typeof(ItemDetailsPanel), "UpdateDetailsDisplay", new Type[] { typeof(InventoryItem), typeof(float) })] // Inventory tab
+
+    // Show compost value in inventory details panel
+    [HarmonyPatch(typeof(ItemDetailsPanel), "UpdateDetailsDisplay", new Type[] { typeof(InventoryItem), typeof(float) })]
     [HarmonyPostfix]
     static void ShowComposterValueInInventory(ItemDetailsPanel __instance, InventoryItem itemRef, float slotSpoilageAmount)
     {
