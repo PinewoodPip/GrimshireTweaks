@@ -128,6 +128,12 @@ public class Plugin : BaseUnityPlugin
                 true,
                 "Optimizes the code for placing objects, reducing lag that occurs when placing objects like tree seeds"
             )),
+            new(typeof(OptimizeInteriorChecks), Config.Bind(
+                "Fixes",
+                "OptimizeIsInteriorChecks",
+                true,
+                "Optimizes the WeatherSystem.IsInteriorScene() checks (used commonly throughout the game) to reduce stutter; most noticeable when placing objects"
+            )),
             new(typeof(FixToolbarWorldInteraction), Config.Bind(
                 "Fixes",
                 "FixToolbarWorldInteraction",

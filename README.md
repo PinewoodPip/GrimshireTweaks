@@ -67,8 +67,9 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 - Optimized the checks for placing objects, reducing the massive lag that occurs when placing ex. tree seeds
     - Placement checks now occur only when the placement cursor moves to another tile, instead of 20 times per second
     - The `Physics2D.OverlapCircle()` calls were also replaced with non-alloc variants to reduce lag spikes from GC
-        - There is still a lag spike coming from this particular call, however I'm unsure at the momment why (and why it only seems noticable with objects that have a 3x3 placement check)
     - This works under the assumption that the world grid cannot change while the player is holding the object to place, which AFAIK is the case (only the player can place/destroy objects?) 
+- The `WeatherSystem.IsInteriorScene()` calls were replaced with a version that caches the `LightSystem` reference to avoid massive lag from `FindObjectOfType` calls (it's one of the most counter-intuitively expensive calls in Unity)
+    - This is mostly noticeable when placing objects as well
 - Added a setting to skip the splash screen, mostly useful to speed up testing while modding
 
 ## Configuration

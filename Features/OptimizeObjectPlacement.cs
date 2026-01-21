@@ -44,6 +44,7 @@ public static class OptimizeObjectPlacement
         int collisionsCount = Physics2D.OverlapCircleNonAlloc(position, 0.25f, squareBoundsCheckerCollisionResults, ~(LayerManager.Instance.PlayerLayer | _this.placeableObjRef.layersToIgnore | LayerManager.Instance.IgnoreLayer));
         CheckIfValidSpot.GetValue(collisionsCount == 0);
 
+        // Note: IsInteriorScene() checks are replaced by OptimizeInteriorChecks.cs to avoid lag from FindObjectOfType calls.
         if (_this.placeableObjRef.placeableOnlyInside && _this.validSpot)
         {
             CheckIfValidSpot.GetValue(WeatherSystem.Instance.IsInteriorScene());
