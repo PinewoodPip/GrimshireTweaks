@@ -47,11 +47,11 @@ public class Plugin : BaseUnityPlugin
                 true,
                 "Makes giftable items show who likes the item in their tooltip, if you've discovered who likes the item"
             )),
-            new(typeof(DialogDismissHotkey), Config.Bind(
+            new(typeof(DialogHotkeys), Config.Bind(
                 "QualityOfLife",
-                "DialogDismissHotkey",
+                "DialogHotkeys",
                 true,
-                "Allows you to select dialogue choices like \"Nevermind\" or \"No\" with the Esc key"
+                "Allows you to progress dialogues with the \"Enter\" key, and select dialogue choices like \"Nevermind\" or \"No\" with the \"Esc\" key"
             )),
             new(typeof(CraftFromContainers), Config.Bind(
                 "QualityOfLife",
