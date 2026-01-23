@@ -53,6 +53,9 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 
     ![Highlighted harvestable crops.](docs/images/highlight_harvestable_crops.png)
 
+- You can customize the text speed of dialogues in the [settings file](#configuration), so you can adjust it to match your reading speed
+    - Animal speech noises will try to play at the original frequency (they won't play sounds faster/slower)
+
 - You can enable a *"It's getting late..."* notification to show when the clock hits 10PM, just so you don't forget to go to bed :P
 
 ### Control tweaks

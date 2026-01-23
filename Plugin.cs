@@ -12,6 +12,7 @@ namespace GrimshireTweaks;
 public class Plugin : BaseUnityPlugin
 {
     internal static new ManualLogSource Logger;
+    internal static ConfigEntry<float> DialogSpeedSetting;
 
     // Utility class for associating a feature with a bool config setting.
     class ToggleableFeature
@@ -146,9 +147,19 @@ public class Plugin : BaseUnityPlugin
                 "Prevents left-click from interacting with the world while the cursor is over toolbar slots"
             )),
         };
+        // ------------
+        // Numeric settings
+        // ------------
+        DialogSpeedSetting = Config.Bind(
+            "QualityOfLife",
+            "DialogSpeed",
+            1f,
+            "Adjusts the speed of dialogue text appearing; default is 1.0. Animal speech noises will try to play at the original frequency."
+        );
 
         // Load features & patches
         Harmony.CreateAndPatchAll(typeof(PluginVersionDisplay));
+        Harmony.CreateAndPatchAll(typeof(DialogSpeed));
         foreach (var feature in toggleableFeatures)
         {
             if (feature.enabled)

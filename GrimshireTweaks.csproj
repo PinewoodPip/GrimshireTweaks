@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>GrimshireTweaks</AssemblyName>
     <Product>Grimshire Tweaks</Product>
-    <Version>1.0.2</Version>
+    <Version>1.1.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
@@ -45,6 +45,9 @@
     </Reference>
     <Reference Include="YarnSpinner.Unity">
       <HintPath>lib\YarnSpinner.Unity.dll</HintPath>
+    </Reference>
+    <Reference Include="Febucci.TextAnimator.Runtime">
+      <HintPath>lib\Febucci.TextAnimator.Runtime.dll</HintPath>
     </Reference>
   </ItemGroup>
 
