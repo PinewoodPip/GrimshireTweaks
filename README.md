@@ -36,7 +36,7 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 
     ![Giftable item showing who likes it.](docs/images/liked_gifts_display.png)
 
-- Villagers you haven't spoken to today yet can show a speech bubble when moused over (*Disabled by default*):
+- Villagers you haven't spoken to today yet can show a speech bubble when moused over (*disabled by default*):
 
     ![Speech bubble indicator for unspoken villagers.](docs/images/daily_dialogue_indicator.png)
 
@@ -48,6 +48,10 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 - Compostable items can show their compost quality value in the inventory and tooltips *(while the composter UI is open)*:
 
     ![Compost quality in tooltip.](docs/images/composter_value_display.png)
+
+- Holding the scythe can highlight harvestable crops, in case you find the harvestable sprites hard to distinguish *(disabled by default)*:
+
+    ![Highlighted harvestable crops.](docs/images/highlight_harvestable_crops.png)
 
 - You can enable a *"It's getting late..."* notification to show when the clock hits 10PM, just so you don't forget to go to bed :P
 

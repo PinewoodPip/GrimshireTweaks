@@ -89,6 +89,12 @@ public class Plugin : BaseUnityPlugin
                 false,
                 "Shows an \"It's getting late...\" notification when the clock hits 10PM"
             )),
+            new(typeof(HighlightHarvestableCrops), Config.Bind(
+                "QualityOfLife",
+                "HighlightHarvestableCrops",
+                false,
+                "Highlights harvestable crops when holding the scythe"
+            )),
 
             // ------------
             // Customization & misc tweaks
