@@ -15,6 +15,8 @@ public class Plugin : BaseUnityPlugin
     internal static new ManualLogSource Logger;
     internal static ConfigEntry<float> DialogSpeedSetting;
     internal static ConfigEntry<float> QuickStackRange;
+    internal static ConfigEntry<bool> QuickStackSpoilableItems;
+    internal static ConfigEntry<bool> QuickStackToolbarItems;
     internal static ConfigEntry<KeyboardShortcut> QuickStackKeybind;
 
     // Utility class for associating a feature with a bool config setting.
@@ -166,13 +168,25 @@ public class Plugin : BaseUnityPlugin
             "The maximum range (in tiles) for quick-stacking to nearby chests, using Chebyshev distance (ie. diagonals count as 1 tile)."
         );
         // ------------
-        // Keybind settings
+        // Quick stack settings
         // ------------
         QuickStackKeybind = Config.Bind(
-            "QualityOfLife",
+            "QualityOfLife.QuickStack",
             "QuickStackKeybind",
             new KeyboardShortcut(KeyCode.G),
             "Keybind for quick-stacking to nearby chests"
+        );
+        QuickStackSpoilableItems = Config.Bind(
+            "QualityOfLife.QuickStack",
+            "QuickStackSpoilableItems",
+            false,
+            "Determines whether edible items can be quick-stacked"
+        );
+        QuickStackToolbarItems = Config.Bind(
+            "QualityOfLife.QuickStack",
+            "QuickStackToolbarItems",
+            true,
+            "Determines whether items in the toolbar (first inventory row) can be quick-stacked"
         );
 
         // Load features & patches

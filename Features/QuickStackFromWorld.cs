@@ -6,6 +6,8 @@ using UnityEngine;
 
 public static class QuickStackFromWorld
 {
+    public static int INVENTORY_SLOTS_PER_ROW = 9;
+
     // Allow quick-stacking from world containers through a hotkey.
     [HarmonyPatch(typeof(PlayerController), "ProcessInput")]
     [HarmonyPostfix]
@@ -49,10 +51,11 @@ public static class QuickStackFromWorld
         foreach (var chest in nearbyChests)
         {
             Inventory chestInventory = chest.GetInventory();
-            foreach (var slot in playerInventory.Items)
+            for (int i = 0; i < playerInventory.Items.Length; i++)
             {
+                Inventory.Slot slot = playerInventory.Items[i];
                 InventoryItem item = slot.itemReference;
-                if (item == null) continue;
+                if (item == null || !CanQuickStackItem(slot, i)) continue;
                 int stackAmount = slot.GetStackAmount();
                 int stacksToMove = Math.Min(stackAmount, chestInventory.SpaceAvailable(item, stackAmount)); // 2nd param is actually unused
                 if (chestInventory.ContainsItemAmount(item, 1) && chestInventory.CanAddStack(item, stacksToMove))
@@ -82,5 +85,14 @@ public static class QuickStackFromWorld
         {
             GameManager.Instance.PopUpDialogBox.DisplayMsg($"Quick-stacked {transferedStacks} item stacks", 1.5f);
         }
+    }
+
+    // Returns whether an item can be quick-stacked based on user settings.
+    public static bool CanQuickStackItem(Inventory.Slot slot, int inventoryIndex)
+    {
+        var item = slot.itemReference;
+        if (!GrimshireTweaks.Plugin.QuickStackSpoilableItems.Value && item.IsEdible() && item.decayRate > 0) return false;
+        if (!GrimshireTweaks.Plugin.QuickStackToolbarItems.Value && inventoryIndex < INVENTORY_SLOTS_PER_ROW) return false;
+        return true;
     }
 }
