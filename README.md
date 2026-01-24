@@ -36,6 +36,11 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 
     ![Giftable item showing who likes it.](docs/images/liked_gifts_display.png)
 
+- Added a "quick-stack" hotkey that moves items from your inventory onto nearby chests that already have stacks of those items (*defaults to G*)
+    - Currently the only feedback for this is a sound + notification showing how many stacks were moved:
+    
+    ![Quick-stack notification.](docs/images/quick_stack.png)
+
 - Villagers you haven't spoken to today yet can show a speech bubble when moused over (*disabled by default*):
 
     ![Speech bubble indicator for unspoken villagers.](docs/images/daily_dialogue_indicator.png)
