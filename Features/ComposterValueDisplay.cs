@@ -9,7 +9,7 @@ public static class ComposterValueDisplay
 {
     // Show composter value in item tooltips
     // while the composter UI is open (only there since the tooltip space is highly limited)
-    [HarmonyPatch(typeof(ItemInfoDisplay), "Display")] // Tooltips (ex. in hotbar)
+    [HarmonyPatch(typeof(ItemInfoDisplay), "Display")] // Tooltips (ex. in toolbar)
     [HarmonyPostfix]
     static void ShowComposterValue(ItemInfoDisplay __instance, bool enabled, InventoryItem itemRef, float itemSpoilage, RectTransform parent)
     {
