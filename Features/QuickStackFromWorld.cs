@@ -22,14 +22,13 @@ public static class QuickStackFromWorld
         if (!GrimshireTweaks.Plugin.QuickStackKeybind.Value.IsDown()) return;
 
         // Check whether quick-stack is usable
+        if (TimeControl.Instance.Paused || TimeControl.Instance.TimeScale <= 0f || Time.timeScale <= 0f) // Pause/timescale checks should cover most UIs. TimeControl timescale is *not* same as Unity's
+        {
+            return;
+        }
         if (!GameManager.Instance.IsCurrentlyAtFarm())
         {
             GameManager.Instance.PopUpDialogBox.DisplayMsg("I can't quick-stack outside my farm!", 1f);
-            return;
-        }
-        PauseMenu pauseMenu = GameManager.Instance.PauseMenu;
-        if (pauseMenu?.IsOpen() ?? false)
-        {
             return;
         }
 
