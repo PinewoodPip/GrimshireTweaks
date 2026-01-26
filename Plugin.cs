@@ -167,12 +167,6 @@ public class Plugin : BaseUnityPlugin
             1f,
             "Adjusts the speed of dialogue text appearing; default is 1.0. Animal speech noises will try to play at the original frequency."
         );
-        QuickStackRange = Config.Bind(
-            "QualityOfLife",
-            "QuickStackRange",
-            3f,
-            "The maximum range (in tiles) for quick-stacking to nearby chests, using Chebyshev distance (ie. diagonals count as 1 tile)."
-        );
         // ------------
         // Quick stack settings
         // ------------
@@ -181,6 +175,12 @@ public class Plugin : BaseUnityPlugin
             "QuickStackKeybind",
             new KeyboardShortcut(KeyCode.G),
             "Keybind for quick-stacking to nearby chests"
+        );
+        QuickStackRange = Config.Bind(
+            "QualityOfLife.QuickStack",
+            "QuickStackRange",
+            3f,
+            "The maximum range (in tiles) for quick-stacking to nearby chests, using Chebyshev distance (ie. diagonals count as 1 tile)."
         );
         QuickStackSpoilableItems = Config.Bind(
             "QualityOfLife.QuickStack",
