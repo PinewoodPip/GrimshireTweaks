@@ -38,7 +38,8 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 
 - Added a "quick-stack" hotkey that moves items from your inventory onto nearby chests that already have stacks of those items (*defaults to G*)
     - Settings exist to prevent quick-stacking food that spoils or items in the toolbar (1st inventory row)
-    - Currently the only feedback for this is a sound + notification showing how many stacks were moved:
+    - You can alt-click items in the inventory UI to mark their type as "favorited", which prevents them from being quick-stacked. Favorited items are denoted by a star by their name in the inventory & tooltips.
+    - Currently the only feedback for quick-stacking is a sound + notification showing how many stacks were moved:
 
     ![Quick-stack notification.](docs/images/quick_stack.png)
 

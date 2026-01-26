@@ -50,10 +50,16 @@ public static class QuickStackFromWorld
                 nearbyChests.Add(chests[i]);
             }
         }
+        if (nearbyChests.Count == 0)
+        {
+            GameManager.Instance.PopUpDialogBox.DisplayMsg("No nearby chests to quick-stack to!", 1f);
+            return;
+        }
         Debug.Log($"Quick-stacking to {nearbyChests.Count} nearby chests.");
 
         // Try to stack items from player inventory to chest inventories
         int transferedStacks = 0;
+        InventoryItem firstStackedItem = null;
         foreach (var chest in nearbyChests)
         {
             Inventory chestInventory = chest.GetInventory();
@@ -77,6 +83,7 @@ public static class QuickStackFromWorld
                     {
                         transferedStacks += 1;
                     }
+                    firstStackedItem ??= item;
                 }
             }
         }
@@ -89,7 +96,7 @@ public static class QuickStackFromWorld
         GameManager.Instance.Player.PlayChestClosedSFX();
         if (transferedStacks > 0)
         {
-            GameManager.Instance.PopUpDialogBox.DisplayMsg($"Quick-stacked {transferedStacks} item stacks", 1.5f);
+            GameManager.Instance.PopUpDialogBox.DisplayFancy($"Quick-stacked {transferedStacks} item stacks", firstStackedItem?.InventoryDisplayIcon, 1.5f); // Show icon of first stacked item as a reference
         }
     }
 
