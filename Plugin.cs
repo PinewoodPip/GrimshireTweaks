@@ -89,6 +89,12 @@ public class Plugin : BaseUnityPlugin
                 true,
                 "Highlights unobtained fish/critters/seeds that are currently in season in the collection log"
             )),
+            new(typeof(ItemPriceDisplay), Config.Bind(
+                "QualityOfLife",
+                "ItemPriceDisplay",
+                false,
+                "Shows item sell prices in the details panel in the inventory UI, even when outside shop UIs"
+            )),
             new(typeof(LateNotification), Config.Bind(
                 "QualityOfLife",
                 "LateNotification",
