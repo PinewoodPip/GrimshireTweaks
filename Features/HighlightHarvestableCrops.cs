@@ -66,6 +66,43 @@ public static class HighlightHarvestableCrops
         }
     }
 
+    // Restore original material when targeting crops with the cursor
+    // Necessary as IInteractable caches the "original" materials
+    // when highlighting, which would otherwise cache the wrong material
+    // while harvestable crops are being highlighted by this feature.
+    [HarmonyPatch(typeof(IInteractable), "Highlight")]
+    [HarmonyPrefix]
+    static void OnCropTargeted(IInteractable __instance, Material highlightMat)
+    {
+        // Restore original material so that IInteractable does not confuse ours for it.
+        if (isHighlighting && __instance is CropObject crop)
+        {
+            SetCropHighlighted(crop, false);
+        }
+    }
+    [HarmonyPatch(typeof(IInteractable), "Highlight")]
+    [HarmonyPostfix]
+    static void AfterCropTargeted(IInteractable __instance, Material highlightMat)
+    {
+        // Restore our highlight when untargeting a harvestable crop.
+        if (isHighlighting && highlightMat == null && __instance is CropObject crop)
+        {
+            SetCropHighlighted(crop, CallMethod<bool>(crop, "IsHarvestable"));
+        }
+    }
+
+    // Remove highlight when crop sprites are updated
+    // and the crop is no longer harvestable (ex. when harvesting a regrowable crop)
+    [HarmonyPatch(typeof(CropObject), "UpdateSprite")]
+    [HarmonyPostfix]
+    static void OnCropSpritesUpdated(CropObject __instance)
+    {
+        if (isHighlighting && !CallMethod<bool>(__instance, "IsHarvestable"))
+        {
+            SetCropHighlighted(__instance, false);
+        }
+    }
+
     // Track instantiated crops to avoid overhead from FindObjectByType()
     [HarmonyPatch(typeof(CropObject), "Start")]
     [HarmonyPostfix]
