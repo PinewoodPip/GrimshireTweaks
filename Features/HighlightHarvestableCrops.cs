@@ -10,7 +10,7 @@ public static class HighlightHarvestableCrops
 
     static Material originalMaterial = null;
     static Material highlightMaterial = null;
-    static HashSet<CropObject> cachedCrops = [];
+    static Dictionary<CropObject, List<SpriteRenderer>> cachedSubPlantSpriteRenderers = [];
     static bool isHighlighting = false;
 
     // Also highlight harvestable crops when holding the scythe.
@@ -22,7 +22,7 @@ public static class HighlightHarvestableCrops
 
         // Toggle highlight on all harvestable crops
         HashSet<CropObject> staleCropReferences = [];
-        foreach (CropObject crop in cachedCrops)
+        foreach (CropObject crop in cachedSubPlantSpriteRenderers.Keys)
         {
             if (crop == null)
             {
@@ -36,23 +36,18 @@ public static class HighlightHarvestableCrops
         // Remove stale crop references
         foreach (CropObject staleCrop in staleCropReferences)
         {
-            cachedCrops.Remove(staleCrop);
+            cachedSubPlantSpriteRenderers.Remove(staleCrop);
         }
     }
 
     // Applies or removes the highlight effect from a crop.
     private static void SetCropHighlighted(CropObject crop, bool highlight)
     {
-        var persistentCropData = GetField<CropManager.PersistentCropData>(crop, "persistenCropDataContainer"); // Field typo is from the game.
-        var subCropObjs = GetField<GameObject[]>(crop, "subCropObjs");
-
         // Set material for all subsprites of the crop
         // The game uses multiple objects to display bumper crops.
-        for (int i = 0; i < persistentCropData.subPlantsList.GetLength(0); i++)
+        List<SpriteRenderer> subCropSpriteRenderers = cachedSubPlantSpriteRenderers[crop];
+        foreach (var spriteRenderer in subCropSpriteRenderers)
         {
-            var subCropObj = subCropObjs[i];
-            var spriteRenderer = subCropObj.GetComponent<SpriteRenderer>();
-
             // Cache materials
             if (originalMaterial == null)
             {
@@ -103,11 +98,33 @@ public static class HighlightHarvestableCrops
         }
     }
 
-    // Track instantiated crops to avoid overhead from FindObjectByType()
+    // Track instantiated crops to avoid overhead from FindObjectByType() and GetComponent() for their sprites
     [HarmonyPatch(typeof(CropObject), "Start")]
     [HarmonyPostfix]
     static void OnCropCreated(CropObject __instance)
     {
-        cachedCrops.Add(__instance);
+        CacheCrop(__instance);
+    }
+    [HarmonyPatch(typeof(CropObject), "UpdateSprite")]
+    [HarmonyPrefix]
+    static void OnBeforeCropSpritesUpdated(CropObject __instance)
+    {
+        CacheCrop(__instance); // Necessary as this is sometimes called before Start()
+    }
+
+    // Caches the SpriteRenderers of a crop.
+    static void CacheCrop(CropObject crop)
+    {
+        // Cache SpriteRenderers
+        List<SpriteRenderer> cropSprites = [];
+        cachedSubPlantSpriteRenderers[crop] = cropSprites;
+        var persistentCropData = GetField<CropManager.PersistentCropData>(crop, "persistenCropDataContainer"); // Field typo is from the game.
+        var subCropObjs = GetField<GameObject[]>(crop, "subCropObjs");
+        for (int i = 0; i < persistentCropData.subPlantsList.GetLength(0); i++)
+        {
+            var subCropObj = subCropObjs[i];
+            var spriteRenderer = subCropObj.GetComponent<SpriteRenderer>();
+            cropSprites.Add(spriteRenderer);
+        }
     }
 }
