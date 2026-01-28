@@ -107,6 +107,12 @@ public class Plugin : BaseUnityPlugin
                 false,
                 "Highlights harvestable crops when holding the scythe"
             )),
+            new(typeof(ToolNotifications), Config.Bind(
+                "QualityOfLife",
+                "ToolNotifications",
+                true,
+                "Controls whether notifications for equipping tools are shown"
+            )),
 
             // ------------
             // Customization & misc tweaks

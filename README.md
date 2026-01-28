@@ -67,6 +67,8 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 
 - You can enable a *"It's getting late..."* notification to show when the clock hits 10PM, just so you don't forget to go to bed :P
 
+- You can disable the "Equipped \<X\>" tool notifications.
+
 ### Control tweaks
 *Most of these are disabled by default.*
 
