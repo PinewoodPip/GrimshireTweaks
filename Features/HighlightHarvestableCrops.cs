@@ -4,6 +4,8 @@ using HarmonyLib;
 using UnityEngine;
 using static GrimshireTweaks.Utils;
 
+namespace GrimshireTweaks;
+
 public static class HighlightHarvestableCrops
 {
     static Color HIGHLIGHT_COLOR = new Color(0.7f, 0.85f, 0.7f, 1f); // Light teal, somewhat greenish

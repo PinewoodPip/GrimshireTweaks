@@ -4,6 +4,8 @@ using HarmonyLib;
 using TMPro;
 using static GrimshireTweaks.Utils;
 
+namespace GrimshireTweaks;
+
 public static class ItemPriceDisplay
 {
     // Show item prices in the details panel in the inventory UI,

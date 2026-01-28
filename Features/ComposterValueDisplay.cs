@@ -5,6 +5,8 @@ using TMPro;
 using UnityEngine;
 using static GrimshireTweaks.Utils;
 
+namespace GrimshireTweaks;
+
 public static class ComposterValueDisplay
 {
     // Show composter value in item tooltips

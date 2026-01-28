@@ -3,6 +3,8 @@ using HarmonyLib;
 using UnityEngine;
 using static GrimshireTweaks.Utils;
 
+namespace GrimshireTweaks;
+
 public static class EfficientAutoCook
 {
     // Cooking UI: when auto-selecting ingredients,
@@ -20,7 +22,7 @@ public static class EfficientAutoCook
         {
             if (!option.gameObject.activeSelf) continue; // Skip unused ingredient slots
 
-            Debug.Log($"Finding best ingredient for category {option.requiredFoodCategoryType}, item {option.requiredFoodItem?.Label}");
+            Plugin.Logger.LogInfo($"Finding best ingredient for category {option.requiredFoodCategoryType}, item {option.requiredFoodItem?.Label}");
 
             // Find the valid ingredient in the player's inventory that restores the least stamina
             float lowestStamina = float.MaxValue;
@@ -33,7 +35,7 @@ public static class EfficientAutoCook
                     float staminaValue = (item.PlayerDietCaloricValue + item.CaloricValue) / 2f; // Use average of player & villager stamina values
                     if (staminaValue < lowestStamina)
                     {
-                        Debug.Log($"Found better ingredient for recipe slot: {item.Label} (stamina {staminaValue})");
+                        Plugin.Logger.LogInfo($"Found better ingredient for recipe slot: {item.Label} (stamina {staminaValue})");
                         lowestStamina = staminaValue;
                         bestIndex = i;
                     }

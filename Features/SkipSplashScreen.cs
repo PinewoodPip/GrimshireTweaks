@@ -2,6 +2,8 @@
 using HarmonyLib;
 using UnityEngine;
 
+namespace GrimshireTweaks;
+
 public static class SkipSplashScreen
 {
     // Skip splash screen (somewhat)

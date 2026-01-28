@@ -4,6 +4,8 @@ using HarmonyLib;
 using UnityEngine;
 using static GrimshireTweaks.Utils;
 
+namespace GrimshireTweaks;
+
 public static class OptimizeObjectPlacement
 {
     // Mixins and trackers for SquareBoundsChecker optimizations

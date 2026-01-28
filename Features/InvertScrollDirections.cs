@@ -2,6 +2,8 @@
 using HarmonyLib;
 using static GrimshireTweaks.Utils;
 
+namespace GrimshireTweaks;
+
 public static class InvertScrollDirections
 {
     // Invert toolbar and pause menu tab bar scroll directions

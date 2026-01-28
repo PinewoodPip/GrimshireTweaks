@@ -8,6 +8,8 @@ using TMPro;
 using UnityEngine;
 using static GrimshireTweaks.Utils;
 
+namespace GrimshireTweaks;
+
 public static class QuickStackFromWorld
 {
     public static int INVENTORY_SLOTS_PER_ROW = 9;
@@ -54,7 +56,7 @@ public static class QuickStackFromWorld
             GameManager.Instance.PopUpDialogBox.DisplayMsg("No nearby chests to quick-stack to!", 1f);
             return;
         }
-        Debug.Log($"Quick-stacking to {nearbyChests.Count} nearby chests.");
+        Plugin.Logger.LogInfo($"Quick-stacking to {nearbyChests.Count} nearby chests.");
 
         // Try to stack items from player inventory to chest inventories
         int transferedStacks = 0;
@@ -74,7 +76,7 @@ public static class QuickStackFromWorld
                     // Transfer the stack
                     chestInventory.AddItem(item, slot.spoilageAverageAmount, stacksToMove);
                     playerInventory.RemoveItemAmount(item, stacksToMove);
-                    Debug.Log($"Quick-stacked {stacksToMove} of {item.Label} to chest at {chest.transform.position}.");
+                    Plugin.Logger.LogInfo($"Quick-stacked {stacksToMove} of {item.Label} to chest at {chest.transform.position}.");
 
                     // Track how many stacks were fully moved
                     // This is somewhat flawed, in the sense that stacks that are only partially moved won't be reported - not sure what the best feedback for this would be
@@ -197,7 +199,7 @@ public static class QuickStackFromWorld
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Quick-stack: failed to save favorited items: {ex.Message}");
+            Plugin.Logger.LogError($"Quick-stack: failed to save favorited items: {ex.Message}");
         }
     }
     private static void LoadFavoritedItems()
@@ -220,7 +222,7 @@ public static class QuickStackFromWorld
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Quick-stack: failed to load favorited items: {ex.Message}");
+            Plugin.Logger.LogError($"Quick-stack: failed to load favorited items: {ex.Message}");
             favoritedItems = new HashSet<int>();
         }
     }

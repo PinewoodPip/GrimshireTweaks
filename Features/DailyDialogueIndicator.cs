@@ -3,6 +3,8 @@ using HarmonyLib;
 using UnityEngine;
 using static GrimshireTweaks.Utils;
 
+namespace GrimshireTweaks;
+
 public class DailyDialogueIndicator
 {
     // Show speech bubble when hovering over NPCs that have not been spoken to today

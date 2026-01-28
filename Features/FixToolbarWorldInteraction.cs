@@ -2,6 +2,8 @@
 using HarmonyLib;
 using UnityEngine;
 
+namespace GrimshireTweaks;
+
 public static class FixToolbarWorldInteraction
 {
     // Prevent interacting with world while the cursor is over the toolbar

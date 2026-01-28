@@ -1,6 +1,8 @@
 
 using HarmonyLib;
 
+namespace GrimshireTweaks;
+
 public static class LateNotification
 {
     static int LATE_WARNING_HOUR = 22;
