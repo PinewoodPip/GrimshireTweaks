@@ -12,6 +12,8 @@ namespace GrimshireTweaks;
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
+    public static readonly string INTENDED_GAME_VERSION = "0.28.1";
+
     internal static new ManualLogSource Logger;
     internal static ConfigEntry<float> DialogSpeedSetting;
     internal static ConfigEntry<float> QuickStackRange;
@@ -41,6 +43,12 @@ public class Plugin : BaseUnityPlugin
     {
         Logger = base.Logger;
         Logger.LogInfo($"{MyPluginInfo.PLUGIN_GUID} is loaded!");
+
+        // Warn about game version mismatch
+        if (Application.version != INTENDED_GAME_VERSION)
+        {
+            Logger.LogWarning($"This version of Grimshire Tweaks was made for Grimshire v{INTENDED_GAME_VERSION} but you're running v{Application.version} - some features may not work. Check for a mod update!");
+        }
 
         // Define settings
         toggleableFeatures = new List<ToggleableFeature>()
