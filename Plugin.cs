@@ -222,16 +222,29 @@ public class Plugin : BaseUnityPlugin
         );
 
         // Load features & patches
-        Harmony.CreateAndPatchAll(typeof(PluginVersionDisplay));
-        Harmony.CreateAndPatchAll(typeof(DialogSpeed));
-        Harmony.CreateAndPatchAll(typeof(QuickStackFromWorld));
+        TryLoadFeature(typeof(PluginVersionDisplay));
+        TryLoadFeature(typeof(DialogSpeed));
+        TryLoadFeature(typeof(QuickStackFromWorld));
         foreach (var feature in toggleableFeatures)
         {
             if (feature.enabled)
             {
-                Logger.LogInfo($"Enabling feature {feature.patchClass.Name}");
-                Harmony.CreateAndPatchAll(feature.patchClass);
+                TryLoadFeature(feature.patchClass);
             }
+        }
+    }
+
+    // Attempts to apply the Harmony patches of a feature.
+    public void TryLoadFeature(Type featureClass)
+    {
+        try
+        {
+            Logger.LogInfo($"Enabling feature {featureClass.Name}");
+            Harmony.CreateAndPatchAll(featureClass);
+        }
+        catch (Exception e)
+        {
+            Logger.LogError($"Error enabling feature {featureClass.Name} (check for a newer version of the mod or report this): {e}");
         }
     }
 }
