@@ -6,6 +6,7 @@ This is a mod for [Grimshire](https://store.steampowered.com/app/2238470/Grimshi
   - [Quality of life](#quality-of-life)
   - [Control tweaks](#control-tweaks)
   - [Fixes and other changes](#fixes--other-changes)
+  - [Features for developers](#features-for-developers)
 - [Configuration](#configuration)
 
 ## Installation
@@ -89,6 +90,10 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 - The `WeatherSystem.IsInteriorScene()` calls were replaced with a version that caches the `LightSystem` reference to avoid massive lag from `FindObjectOfType` calls (it's one of the most counter-intuitively expensive calls in Unity)
     - This is mostly noticeable when placing objects as well
 - Added a setting to skip the splash screen, mostly useful to speed up testing while modding
+
+## Features for developers
+- The `AutoLoadSave` setting allows you to auto-load a save when the game starts, to speed up testing
+    - You can set a specific file to be used through the `AutoLoadSaveFileName` setting; otherwise, the most recent save will be loaded
 
 ## Configuration
 After launching the game at least once with the mod, a config file will be created in `\Grimshire\BepInEx\config\GrimshireTweaks.cfg` where you can configure most of the mod's features. You need to restart the game to apply any changes.

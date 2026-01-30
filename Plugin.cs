@@ -18,6 +18,7 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<bool> QuickStackSpoilableItems;
     internal static ConfigEntry<bool> QuickStackToolbarItems;
     internal static ConfigEntry<KeyboardShortcut> QuickStackKeybind;
+    internal static ConfigEntry<string> AutoLoadSaveFileName;
 
     // Utility class for associating a feature with a bool config setting.
     class ToggleableFeature
@@ -163,6 +164,16 @@ public class Plugin : BaseUnityPlugin
                 true,
                 "Prevents left-click from interacting with the world while the cursor is over toolbar slots"
             )),
+
+            // ------------
+            // Dev features
+            // ------------
+            new(typeof(AutoLoadSave), Config.Bind(
+                "Dev",
+                "AutoLoadSave",
+                false,
+                "Automatically loads a save when the game starts; set \"AutoLoadSaveFileName\" setting to configure which save is loaded"
+            )),
         };
         // ------------
         // Numeric settings
@@ -199,6 +210,15 @@ public class Plugin : BaseUnityPlugin
             "QuickStackToolbarItems",
             true,
             "Determines whether items in the toolbar (first inventory row) can be quick-stacked"
+        );
+        // ------------
+        // Dev settings
+        // ------------
+        AutoLoadSaveFileName = Config.Bind(
+            "Dev",
+            "AutoLoadSaveFileName",
+            "",
+            "The filename (with \".grimshire\" extension) of the specific save to load on game start. Leave empty to load the most recent save. Requires \"AutoLoadSave\" to be enabled."
         );
 
         // Load features & patches
