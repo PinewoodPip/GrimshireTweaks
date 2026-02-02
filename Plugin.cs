@@ -122,6 +122,12 @@ public class Plugin : BaseUnityPlugin
                 true,
                 "Controls whether notifications for equipping tools are shown"
             )),
+            new(typeof(AutoOpenGates), Config.Bind(
+                "QualityOfLife",
+                "AutoOpenGates",
+                false,
+                "Automatically opens/closes gates when you get close to them or walk away"
+            )),
 
             // ------------
             // Customization & misc tweaks

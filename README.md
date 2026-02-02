@@ -76,6 +76,7 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 - In dialogues, you can press the `Enter` key to advance to the next line (as if clicking), and the `Esc` key to select options like "Nevermind", "No", etc. to dismiss choices quicker
 - You can invert the toolbar scroll direction, such that scrolling down moves to the slot on the right
     - This also applies to scrolling tabs in the pause menu
+- You can auto-open/close gates when going near/away from them
 - You can reduce the cooldown for left-clicking in UIs, so you can ex. swap items around in the inventory quicker
 - You can make the player run by default instead of walking
 
