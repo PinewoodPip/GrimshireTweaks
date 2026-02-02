@@ -6,6 +6,7 @@ using HarmonyLib;
 using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using static GrimshireTweaks.Utils;
 
 namespace GrimshireTweaks;
@@ -28,9 +29,9 @@ public static class QuickStackFromWorld
         {
             return;
         }
-        if (!GameManager.Instance.IsCurrentlyAtFarm())
+        if (!CanQuickStackInCurrentScene())
         {
-            GameManager.Instance.PopUpDialogBox.DisplayMsg("I can't quick-stack outside my farm!", 1f);
+            GameManager.Instance.PopUpDialogBox.DisplayMsg("I can't quick-stack here!", 1f);
             return;
         }
 
@@ -151,7 +152,7 @@ public static class QuickStackFromWorld
     }
     [HarmonyPatch(typeof(ItemInfoDisplay), "Display")] // Tooltips (ex. in toolbar)
     [HarmonyPostfix]
-    static void ShowComposterValue(ItemInfoDisplay __instance, bool enabled, InventoryItem itemRef, float itemSpoilage, RectTransform parent)
+    static void ShowFavoritedTooltip(ItemInfoDisplay __instance, bool enabled, InventoryItem itemRef, float itemSpoilage, RectTransform parent)
     {
         if (itemRef == null) return;
 
@@ -163,6 +164,12 @@ public static class QuickStackFromWorld
             var nameText = GetField<TextMeshProUGUI>(__instance, "infoTMP");
             nameText.text = "★ " + nameText.text;
         }
+    }
+
+    // Returns whether quick-stacking is allowed in the current scene.
+    public static bool CanQuickStackInCurrentScene()
+    {
+        return GameManager.Instance.IsCurrentlyAtFarm() || SceneManager.GetActiveScene().name == "Interior_Home_Scene";
     }
 
     // Returns whether an item can be quick-stacked based on user settings.
