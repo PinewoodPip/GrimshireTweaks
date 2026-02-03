@@ -84,6 +84,18 @@ public static class RemindersHUD
         {
             reminders.Add("Some troughs are empty");
         }
+
+        // Birthday reminder
+        if (Plugin.RemindersHUDBirthdayReminder.Value)
+        {
+            CharacterManager characterManager = GameManager.Instance.CharacterManager;
+            Character birthdayChar = characterManager.CharacterBdayToday();
+            CharacterData birthdayCharData = birthdayChar ? characterManager.GetCharacterDataByID(birthdayChar.ID) : null;
+            if (birthdayChar != null && !birthdayCharData.giftedToday)
+            {
+                reminders.Add($"{birthdayChar.FirstName}'s birthday!");
+            }
+        }
         return reminders;
     }
 
@@ -158,5 +170,16 @@ public static class RemindersHUD
             }
         }
         return false;
+    }
+    // Update UI when gifting on a birthday.
+    [HarmonyPatch(typeof(CharacterManager), "CharacterRecievedGift")]
+    [HarmonyPostfix]
+    static void AfterCharacterRecievedGift(CharacterManager __instance, int characterID)
+    {
+        Character birthdayChar = __instance.CharacterBdayToday();
+        if (characterID == birthdayChar?.ID)
+        {
+            isDirty = true;
+        }
     }
 }

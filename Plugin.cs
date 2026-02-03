@@ -23,6 +23,7 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<string> AutoLoadSaveFileName;
     internal static ConfigEntry<bool> RemindersHUDWeatherReminder;
     internal static ConfigEntry<bool> RemindersHUDTroughReminder;
+    internal static ConfigEntry<bool> RemindersHUDBirthdayReminder;
 
     // Utility class for associating a feature with a bool config setting.
     class ToggleableFeature
@@ -251,6 +252,12 @@ public class Plugin : BaseUnityPlugin
             "ShowTroughReminder",
             true,
             "Determines whether to show empty trough warning in the reminders widget"
+        RemindersHUDBirthdayReminder = Config.Bind(
+            "QualityOfLife.Reminders",
+            "ShowBirthdayReminder",
+            true,
+            "Determines whether to show birthday reminders in the reminders widget"
+        );
         );
         // ------------
         // Dev settings
