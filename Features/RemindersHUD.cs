@@ -9,14 +9,22 @@ namespace GrimshireTweaks;
 
 public static class RemindersHUD
 {
-    static bool hadEmptyTroughs = false;
-    static bool knowsTomorrowsWeather = false;
+    static bool hadEmptyTroughs
+    {
+        get;
+        set { if (value != field) isDirty = true; field = value; }
+    }
+    static bool knowsTomorrowsWeather
+    {
+        get;
+        set { if (value != field) isDirty = true; field = value; }
+    }
+    static bool isDirty = true;
 
     [HarmonyPatch(typeof(PinnedQuestDisplay), "UpdateDisplay")]
     [HarmonyPostfix]
     static void AfterPinnedQuestDisplayUpdateDisplay(PinnedQuestDisplay __instance, Quest pinnedQuest)
     {
-        // TODO refresh widget when flags change
         bool hasQuest = pinnedQuest != null;
         var descTMP = GetField<TextMeshProUGUI>(__instance, "descTMP");
 
@@ -40,6 +48,21 @@ public static class RemindersHUD
         foreach (string reminder in reminders)
         {
             descTMP.text += $"• {reminder}\n";
+        }
+    }
+
+    // Update the widget if it was marked as dirty.
+    [HarmonyPatch(typeof(PlayerController), "Update")]
+    [HarmonyPostfix]
+    static void TryUpdateRemindersHUD(PlayerController __instance)
+    {
+        if (isDirty)
+        {
+            QuestManager questManager = GameManager.Instance.QuestManager;
+            Quest pinnedQuest = questManager.GetPinnedQuest();
+            var pinnedQuestDisplay = GetField<PinnedQuestDisplay>(questManager, "pinnedQuestDisplay");
+            pinnedQuestDisplay?.UpdateDisplay(pinnedQuest);
+            isDirty = false;
         }
     }
 
