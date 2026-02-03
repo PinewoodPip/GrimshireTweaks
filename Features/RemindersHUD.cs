@@ -85,6 +85,13 @@ public static class RemindersHUD
             reminders.Add("Some troughs are empty");
         }
 
+        // Tano critter taming reminder
+        GameData gameData = GameData.Instance;
+        if (Plugin.RemindersHUDCritterReminder.Value && gameData.TanoTameCritterID != 0 && gameData.DaysTilTanoTamesCritter <= 0)
+        {
+            reminders.Add("Tano has tamed a critter");
+        }
+
         // Birthday reminder
         if (Plugin.RemindersHUDBirthdayReminder.Value)
         {
@@ -111,6 +118,7 @@ public static class RemindersHUD
     static void AfterEndOfDayScreenSetupDisplay(EndOfDayScreen __instance)
     {
         knowsTomorrowsWeather = false;
+        isDirty = true; // Always update on a new day (for convenience for reminders that always reset on new day)
     }
 
     // Update empty trough status
@@ -171,6 +179,14 @@ public static class RemindersHUD
         }
         return false;
     }
+    // Update UI when picking up a critter from Tano.
+    [HarmonyPatch(typeof(PersistentAnimalsManager), "AddTanoTamedCritter")]
+    [HarmonyPostfix]
+    static void AfterPersistentAnimalsManagerAddTanoTamedCritter(PersistentAnimalsManager __instance, int critterTypeID)
+    {
+        isDirty = true;
+    }
+
     // Update UI when gifting on a birthday.
     [HarmonyPatch(typeof(CharacterManager), "CharacterRecievedGift")]
     [HarmonyPostfix]
