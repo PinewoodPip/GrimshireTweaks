@@ -92,6 +92,17 @@ public static class RemindersHUD
             reminders.Add("Tano has tamed a critter");
         }
 
+        // Tool upgrades
+        if (Plugin.RemindersHUDToolReminder.Value)
+        {
+            ToolWheel toolWheel = GameManager.Instance.ToolWheel;
+            string upgradedToolStr = toolWheel.ToolUpgradeReady();
+            if (upgradedToolStr != "")
+            {
+                reminders.Add($"{upgradedToolStr} upgrade ready");
+            }
+        }
+
         // Birthday reminder
         if (Plugin.RemindersHUDBirthdayReminder.Value)
         {
@@ -179,6 +190,20 @@ public static class RemindersHUD
         }
         return false;
     }
+    // Update UI when picking up upgraded tools.
+    [HarmonyPatch(typeof(ToolWheel), "AttemptReturnReadyTool")]
+    [HarmonyPostfix]
+    static void AfterUpgradedTool(ToolWheel __instance)
+    {
+        isDirty = true;
+    }
+    [HarmonyPatch(typeof(ToolWheel), "AttemptReturnReadyRod")]
+    [HarmonyPostfix]
+    static void AfterAfterUpgradedRod(ToolWheel __instance)
+    {
+        isDirty = true;
+    }
+
     // Update UI when picking up a critter from Tano.
     [HarmonyPatch(typeof(PersistentAnimalsManager), "AddTanoTamedCritter")]
     [HarmonyPostfix]

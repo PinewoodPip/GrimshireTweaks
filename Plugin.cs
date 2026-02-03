@@ -25,6 +25,7 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<bool> RemindersHUDTroughReminder;
     internal static ConfigEntry<bool> RemindersHUDBirthdayReminder;
     internal static ConfigEntry<bool> RemindersHUDCritterReminder;
+    internal static ConfigEntry<bool> RemindersHUDToolReminder;
 
     // Utility class for associating a feature with a bool config setting.
     class ToggleableFeature
@@ -265,6 +266,11 @@ public class Plugin : BaseUnityPlugin
             true,
             "Determines whether to show a reminder for picking up Tano's tamed critter in the reminders widget"
         );
+        RemindersHUDToolReminder = Config.Bind(
+            "QualityOfLife.Reminders",
+            "ShowToolReminder",
+            true,
+            "Determines whether to show a reminder for tool upgrades in the reminders widget"
         );
         // ------------
         // Dev settings

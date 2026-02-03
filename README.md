@@ -74,6 +74,7 @@ Below is a list of features of the mod; most can be toggled through [a settings 
     - Showing tomorrow's weather *(after learning it from Percy)*
     - Character birthdays
     - Critter waiting to be picked up from Tano *(pro tip: it always takes 3 days)*
+    - Tool upgrades waiting to be picked up
     - Warning for empty troughs
 
 ### Control tweaks
