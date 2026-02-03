@@ -20,6 +20,7 @@ public static class RemindersHUD
         set { if (value != field) isDirty = true; field = value; }
     }
     static bool isDirty = true;
+    static TextMeshProUGUI remindersText = null;
 
     [HarmonyPatch(typeof(PinnedQuestDisplay), "UpdateDisplay")]
     [HarmonyPostfix]
@@ -28,26 +29,29 @@ public static class RemindersHUD
         bool hasQuest = pinnedQuest != null;
         var descTMP = GetField<TextMeshProUGUI>(__instance, "descTMP");
 
-        // If the player has no quest selected,
-        // update the header and re-show the widget
-        if (!hasQuest)
+        // Initialize the widget
+        // The quest panel background does not have autosize,
+        // so we can't really reuse its description text
+        if (remindersText == null)
         {
-            var displayObj = GetField<GameObject>(__instance, "displayObj");
-            var titleTMP = GetField<TextMeshProUGUI>(__instance, "titleTMP");
-            titleTMP.text = "Reminders";
-            descTMP.text = "";
-            displayObj.SetActive(true);
+            remindersText = GameObject.Instantiate(descTMP);
+            remindersText.transform.SetParent(descTMP.transform.parent);
+            remindersText.autoSizeTextContainer = false;
+            remindersText.color = Color.white;
+            remindersText.fontSize = 12;
+            remindersText.fontSizeMax = 12;
+            remindersText.outlineColor = Color.black;
+            remindersText.outlineWidth = 0.2f;
         }
+        Vector2 questPanelPos = descTMP.rectTransform.anchoredPosition;
+        remindersText.rectTransform.anchoredPosition = hasQuest ? questPanelPos - new Vector2(0, 75) : questPanelPos;
 
         // Append reminders to description
         var reminders = GetReminders();
-        if (reminders.Count > 0)
-        {
-            descTMP.text += "\n";
-        }
+        remindersText.text = "";
         foreach (string reminder in reminders)
         {
-            descTMP.text += $"• {reminder}\n";
+            remindersText.text += $"• {reminder}\n";
         }
     }
 
