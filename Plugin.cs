@@ -23,6 +23,7 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<string> AutoLoadSaveFileName;
     internal static ConfigEntry<bool> RemindersHUDWeatherReminder;
     internal static ConfigEntry<bool> RemindersHUDTroughReminder;
+    internal static ConfigEntry<bool> RemindersHUDWateringReminder;
     internal static ConfigEntry<bool> RemindersHUDBirthdayReminder;
     internal static ConfigEntry<bool> RemindersHUDCritterReminder;
     internal static ConfigEntry<bool> RemindersHUDToolReminder;
@@ -253,7 +254,14 @@ public class Plugin : BaseUnityPlugin
             "QualityOfLife.Reminders",
             "ShowTroughReminder",
             true,
-            "Determines whether to show empty trough warning in the reminders widget"
+            "Determines whether to show a reminder for empty troughs in the reminders widget"
+        );
+        RemindersHUDWateringReminder = Config.Bind(
+            "QualityOfLife.Reminders",
+            "ShowWateringReminder",
+            true,
+            "Determines whether to show a reminder for unwatered crops in the reminders widget"
+        );
         RemindersHUDBirthdayReminder = Config.Bind(
             "QualityOfLife.Reminders",
             "ShowBirthdayReminder",

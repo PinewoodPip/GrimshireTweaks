@@ -1,4 +1,5 @@
 
+using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using TMPro;
@@ -9,18 +10,12 @@ namespace GrimshireTweaks;
 
 public static class RemindersHUD
 {
-    static bool hadEmptyTroughs
-    {
-        get;
-        set { if (value != field) isDirty = true; field = value; }
-    }
-    static bool knowsTomorrowsWeather
-    {
-        get;
-        set { if (value != field) isDirty = true; field = value; }
-    }
     static bool isDirty = true;
     static TextMeshProUGUI remindersText = null;
+
+    static bool hadEmptyTroughs { get; set { SetDirtyFlag(ref field, value); } }
+    static bool knowsTomorrowsWeather { get; set { SetDirtyFlag(ref field, value); } }
+    static bool cropsNeedWatering { get; set { SetDirtyFlag(ref field, value); } }
 
     [HarmonyPatch(typeof(PinnedQuestDisplay), "UpdateDisplay")]
     [HarmonyPostfix]
@@ -75,14 +70,24 @@ public static class RemindersHUD
     public static List<string> GetReminders()
     {
         List<string> reminders = [];
+
+        // Weather reminder
         if (Plugin.RemindersHUDWeatherReminder.Value && knowsTomorrowsWeather)
         {
             string weatherLabel = WeatherSystem.Instance.GetTomorrowsWeather().Name; // Ex. "sunny day"
             reminders.Add($"Tomorrow is {weatherLabel}");
         }
+
+        // Trough reminder
         if (Plugin.RemindersHUDTroughReminder.Value && hadEmptyTroughs)
         {
             reminders.Add("Some troughs are empty");
+        }
+
+        // Crop watering reminder
+        if (Plugin.RemindersHUDWateringReminder.Value && cropsNeedWatering)
+        {
+            reminders.Add("Some crops need watering");
         }
 
         // Tano critter taming reminder
@@ -190,6 +195,59 @@ public static class RemindersHUD
         }
         return false;
     }
+
+    // Track whether any crops need watering.
+    [HarmonyPatch(typeof(CropManager), "UpdateAllPlantsStatus")]
+    [HarmonyPostfix]
+    static void AfterCropManagerUpdateAll(CropManager __instance)
+    {
+        foreach (var crop in __instance.listOfPersistentCropData)
+        {
+            if (!crop.wateredToday)
+            {
+                cropsNeedWatering = true;
+                return;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(CropObject), "WaterPlant")]
+    [HarmonyPostfix]
+    static void AfterWateredCrop(CropObject __instance)
+    {
+        cropsNeedWatering = AnyCropNeedsWatering();
+
+    }
+    [HarmonyPatch(typeof(CropObject), "Start")]
+    [HarmonyPostfix]
+    static void AfterCropStart(CropObject __instance)
+    {
+        cropsNeedWatering = AnyCropNeedsWatering();
+    }
+    [HarmonyPatch(typeof(CropObject), "Init")]
+    [HarmonyPostfix]
+    static void AfterCropInit(CropObject __instance)
+    {
+        cropsNeedWatering = AnyCropNeedsWatering();
+    }
+    // Returns whether the player is **at the farm** and any crops need watering.
+    public static bool AnyCropNeedsWatering()
+    {
+        // Note: if it's raining, wateredToday is only set for crops *after* leaving the area they're in (or at the end of day).
+        if (!GameManager.Instance.IsCurrentlyAtFarm() || WeatherSystem.Instance.RainyDay())
+        {
+            return false;
+        }
+        CropObject[] crops = GameObject.FindObjectsOfType<CropObject>();
+        foreach (var crop in crops)
+        {
+            if (!crop.PCropDataContainer.wateredToday)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Update UI when picking up upgraded tools.
     [HarmonyPatch(typeof(ToolWheel), "AttemptReturnReadyTool")]
     [HarmonyPostfix]
@@ -222,5 +280,15 @@ public static class RemindersHUD
         {
             isDirty = true;
         }
+    }
+    
+    // Utility method for setters to also set the dirty flag if the value of the property changed.
+    static void SetDirtyFlag<T>(ref T field, T value) where T : IEquatable<T>
+    {
+        if (!value.Equals(field))
+        {
+            isDirty = true;
+        }
+        field = value;
     }
 }

@@ -75,6 +75,7 @@ Below is a list of features of the mod; most can be toggled through [a settings 
     - Character birthdays
     - Critter waiting to be picked up from Tano *(pro tip: it always takes 3 days)*
     - Tool upgrades waiting to be picked up
+    - Crops that need watering
     - Warning for empty troughs
 
 ### Control tweaks
