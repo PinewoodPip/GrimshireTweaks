@@ -27,19 +27,24 @@ public static class RemindersHUD
         // Initialize the widget
         // The quest panel background does not have autosize,
         // so we can't really reuse its description text
+        float uiScaleMultiplier = Screen.height / 1024f * 0.85f;
         if (remindersText == null)
         {
             remindersText = GameObject.Instantiate(descTMP);
             remindersText.transform.SetParent(descTMP.transform.parent);
             remindersText.autoSizeTextContainer = false;
             remindersText.color = Color.white;
-            remindersText.fontSize = 12;
-            remindersText.fontSizeMax = 12;
+            remindersText.fontSize = descTMP.fontSize * uiScaleMultiplier;
+            remindersText.fontSizeMin = descTMP.fontSizeMin * uiScaleMultiplier;
+            remindersText.fontSizeMax = descTMP.fontSizeMax * uiScaleMultiplier;
             remindersText.outlineColor = Color.black;
             remindersText.outlineWidth = 0.2f;
+            remindersText.enableAutoSizing = false;
+            remindersText.overflowMode = TextOverflowModes.Overflow;
         }
         Vector2 questPanelPos = descTMP.rectTransform.anchoredPosition;
-        remindersText.rectTransform.anchoredPosition = hasQuest ? questPanelPos - new Vector2(0, 75) : questPanelPos;
+        Vector2 widgetPos = new Vector2(questPanelPos.x - 10, questPanelPos.y) + new Vector2(0, hasQuest ? -65 * uiScaleMultiplier : 0);
+        remindersText.rectTransform.anchoredPosition = widgetPos;
 
         // Append reminders to description
         var reminders = GetReminders();
@@ -87,7 +92,7 @@ public static class RemindersHUD
         // Crop watering reminder
         if (Plugin.RemindersHUDWateringReminder.Value && cropsNeedWatering)
         {
-            reminders.Add("Some crops need watering");
+            reminders.Add("Crops need watering");
         }
 
         // Tano critter taming reminder

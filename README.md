@@ -78,6 +78,8 @@ Below is a list of features of the mod; most can be toggled through [a settings 
     - Crops that need watering
     - Warning for empty troughs
 
+    ![Reminders widget example.](docs/images/reminders_hud.png)
+
 ### Control tweaks
 *Most of these are disabled by default.*
 
