@@ -21,6 +21,8 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<bool> QuickStackToolbarItems;
     internal static ConfigEntry<KeyboardShortcut> QuickStackKeybind;
     internal static ConfigEntry<string> AutoLoadSaveFileName;
+    internal static ConfigEntry<bool> RemindersHUDWeatherReminder;
+    internal static ConfigEntry<bool> RemindersHUDTroughReminder;
 
     // Utility class for associating a feature with a bool config setting.
     class ToggleableFeature
@@ -130,6 +132,16 @@ public class Plugin : BaseUnityPlugin
             )),
 
             // ------------
+            // Reminder settings
+            // ------------
+            new(typeof(RemindersHUD), Config.Bind(
+                "QualityOfLife.Reminders",
+                "RemindersHUD",
+                false,
+                "Shows reminders in the pinned quest display. See other settings in this category to configure which reminders are shown"
+            )),
+
+            // ------------
             // Customization & misc tweaks
             // ------------
             new(typeof(InvertScrollDirections), Config.Bind(
@@ -224,6 +236,21 @@ public class Plugin : BaseUnityPlugin
             "QuickStackToolbarItems",
             true,
             "Determines whether items in the toolbar (first inventory row) can be quick-stacked"
+        );
+        // ------------
+        // Reminders HUD settings
+        // ------------
+        RemindersHUDWeatherReminder = Config.Bind(
+            "QualityOfLife.Reminders",
+            "ShowWeatherReminder",
+            true,
+            "Determines whether to show tomorrow's weather in the reminders widget"
+        );
+        RemindersHUDTroughReminder = Config.Bind(
+            "QualityOfLife.Reminders",
+            "ShowTroughReminder",
+            true,
+            "Determines whether to show empty trough warning in the reminders widget"
         );
         // ------------
         // Dev settings

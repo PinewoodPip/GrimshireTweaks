@@ -70,6 +70,10 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 
 - You can disable the "Equipped \<X\>" tool notifications.
 
+- You can enable a reminders widget for certain tasks/info, which will display in the pinned quest UI. You can show the following reminders there *(configurable independently)*:
+    - Showing tomorrow's weather *(after learning it from Percy)*
+    - Warning for empty troughs
+
 ### Control tweaks
 *Most of these are disabled by default.*
 
