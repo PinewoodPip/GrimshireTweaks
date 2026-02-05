@@ -12,7 +12,7 @@ namespace GrimshireTweaks;
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-    public static readonly string INTENDED_GAME_VERSION = "0.28.1";
+    public static readonly string INTENDED_GAME_VERSION = "0.28.8";
 
     internal static new ManualLogSource Logger;
     internal static ConfigEntry<float> DialogSpeedSetting;

@@ -10,7 +10,7 @@ This is a mod for [Grimshire](https://store.steampowered.com/app/2238470/Grimshi
 - [Configuration](#configuration)
 
 ## Installation
-The mod currently targets game version **v0.28.1**; beta versions are untested (but *might* still work).
+The mod currently targets game version **v0.28.8**; beta versions are untested (but *might* still work).
 
 - Download the latest version from [the releases page](https://github.com/PinewoodPip/GrimshireTweaks/releases)
 - Extract the contents of the zip to the game folder *(right-click Grimshire in your Steam library -> "Manage" -> "Browse local files")*

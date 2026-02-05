@@ -260,12 +260,6 @@ public static class RemindersHUD
     {
         isDirty = true;
     }
-    [HarmonyPatch(typeof(ToolWheel), "AttemptReturnReadyRod")]
-    [HarmonyPostfix]
-    static void AfterAfterUpgradedRod(ToolWheel __instance)
-    {
-        isDirty = true;
-    }
 
     // Update UI when picking up a critter from Tano.
     [HarmonyPatch(typeof(PersistentAnimalsManager), "AddTanoTamedCritter")]
