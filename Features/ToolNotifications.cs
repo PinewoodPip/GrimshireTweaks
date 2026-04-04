@@ -7,15 +7,21 @@ namespace GrimshireTweaks;
 
 public static class ToolNotifications
 {
+    static bool _RequestedToolMessage = false;
+
     // Prevent notifications for equipping tools from showing.
     [HarmonyPatch(typeof(PopUpDialogBox), "DisplayFancy")]
     [HarmonyPrefix]
     static bool OnFancyMessage(PopUpDialogBox __instance, string msg, Sprite spriteImage, float displayTimeSecs, AudioClip audioClip)
     {
-        // TODO support localizations when the game adds them
-        // An IL edit to patch out the calls would be the most robust way of doing this,
-        // but it felt overkill.
-        bool isToolEquipMessage = Regex.IsMatch(msg, @"^Equipped ");
-        return !isToolEquipMessage;
+        return !_RequestedToolMessage;;
+    }
+
+    // Track when the game attempts to show the "Equipped X" messages.
+    [HarmonyPatch(typeof(LocalizationManager), "LocalizeString")]
+    [HarmonyPostfix]
+    static void After(string table, string key, params object[] variables)
+    {
+        _RequestedToolMessage = table == "Miscellaneous" && key == "popup.EquippedTool";
     }
 }

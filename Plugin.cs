@@ -124,8 +124,8 @@ public class Plugin : BaseUnityPlugin
             )),
             new(typeof(ToolNotifications), Config.Bind(
                 "QualityOfLife",
-                "ToolNotifications",
-                true,
+                "HideToolNotifications",
+                false,
                 "Controls whether notifications for equipping tools are shown"
             )),
             new(typeof(AutoOpenGates), Config.Bind(

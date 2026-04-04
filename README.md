@@ -83,7 +83,7 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 ### Control tweaks
 *Most of these are disabled by default.*
 
-- In dialogues, you can press the `Enter` key to advance to the next line (as if clicking), and the `Esc` key to select options like "Nevermind", "No", etc. to dismiss choices quicker
+- In dialogues, you can press the `Enter` key to advance to the next line (as if clicking), and the `Esc` key to select options like "Nevermind", "No", etc. to dismiss choices quicker (English-only for now)
 - You can invert the toolbar scroll direction, such that scrolling down moves to the slot on the right
     - This also applies to scrolling tabs in the pause menu
 - You can auto-open/close gates when going near/away from them
