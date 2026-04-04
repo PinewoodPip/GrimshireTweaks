@@ -246,7 +246,8 @@ public static class RemindersHUD
         CropObject[] crops = GameObject.FindObjectsOfType<CropObject>();
         foreach (var crop in crops)
         {
-            if (!crop.PCropDataContainer.wateredToday)
+            var seedItemRef = crop.cropReference.SeedItemRef;
+            if (!crop.PCropDataContainer.wateredToday && (!seedItemRef || seedItemRef.ID != 414)) // Ignore hay.
             {
                 return true;
             }
