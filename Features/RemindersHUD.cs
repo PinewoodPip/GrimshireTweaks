@@ -31,7 +31,7 @@ public static class RemindersHUD
         if (remindersText == null)
         {
             remindersText = GameObject.Instantiate(descTMP);
-            remindersText.transform.SetParent(descTMP.transform.parent);
+            remindersText.transform.SetParent(descTMP.transform.parent.parent.parent);
             remindersText.autoSizeTextContainer = false;
             remindersText.color = Color.white;
             remindersText.fontSize = descTMP.fontSize * uiScaleMultiplier;
@@ -41,9 +41,10 @@ public static class RemindersHUD
             remindersText.outlineWidth = 0.2f;
             remindersText.enableAutoSizing = false;
             remindersText.overflowMode = TextOverflowModes.Overflow;
+            remindersText.rectTransform.sizeDelta = new Vector2(600, 200);
         }
         Vector2 questPanelPos = descTMP.rectTransform.anchoredPosition;
-        Vector2 widgetPos = new Vector2(questPanelPos.x - 10, questPanelPos.y) + new Vector2(0, hasQuest ? -65 * uiScaleMultiplier : 0);
+        Vector2 widgetPos = new Vector2(questPanelPos.x - 10, questPanelPos.y - 50 * uiScaleMultiplier) + new Vector2(0, hasQuest ? -200 * uiScaleMultiplier : -110 * uiScaleMultiplier);
         remindersText.rectTransform.anchoredPosition = widgetPos;
 
         // Append reminders to description
