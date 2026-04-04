@@ -10,7 +10,7 @@ This is a mod for [Grimshire](https://store.steampowered.com/app/2238470/Grimshi
 - [Configuration](#configuration)
 
 ## Installation
-The mod currently targets game version **v0.28.8**; beta versions are untested (but *might* still work).
+The mod currently targets game version **v0.28.11**; beta versions are untested (but *might* still work).
 
 - Download the latest version from [the releases page](https://github.com/PinewoodPip/GrimshireTweaks/releases)
 - Extract the contents of the zip to the game folder *(right-click Grimshire in your Steam library -> "Manage" -> "Browse local files")*
@@ -94,13 +94,17 @@ Below is a list of features of the mod; most can be toggled through [a settings 
 
 - If the cursor is over the toolbar, clicking a slot will no longer also try to interact with an object in the world
     - This fixes accidentally interacting with stuff while you're trying to switch slots by clicking them
+- Added a setting to skip the splash screen, mostly useful to speed up testing while modding
+
+Fixes for older game versions that have since then been addressed by the developers:
+
 - Optimized the checks for placing objects, reducing the massive lag that occurs when placing ex. tree seeds
     - Placement checks now occur only when the placement cursor moves to another tile, instead of 20 times per second
     - The `Physics2D.OverlapCircle()` calls were also replaced with non-alloc variants to reduce lag spikes from GC
     - This works under the assumption that the world grid cannot change while the player is holding the object to place, which AFAIK is the case (only the player can place/destroy objects?) 
 - The `WeatherSystem.IsInteriorScene()` calls were replaced with a version that caches the `LightSystem` reference to avoid massive lag from `FindObjectOfType` calls (it's one of the most counter-intuitively expensive calls in Unity)
     - This is mostly noticeable when placing objects as well
-- Added a setting to skip the splash screen, mostly useful to speed up testing while modding
+    - This problem was now addressed by the developers in v0.28.11.
 
 ## Features for developers
 - The `AutoLoadSave` setting allows you to auto-load a save when the game starts, to speed up testing
