@@ -101,7 +101,7 @@ public static class CraftFromContainers
             {
                 // Check if the requirement is met through items in containers
                 ItemAmount reqItem = recipe.RequiredItems[j];
-                requiredMaterialSlot.Setup(reqItem);
+                requiredMaterialSlot.Setup(reqItem, __instance);
                 HashSet<InventoryItem> satisfiedIngredients = [];
                 CanMakeRecipeUsingContainers(__instance, recipe, 1, ref satisfiedIngredients);
                 if (satisfiedIngredients.Contains(reqItem.Item))

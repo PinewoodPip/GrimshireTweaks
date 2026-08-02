@@ -16,7 +16,7 @@ public static class ItemPriceDisplay
     {
         if (itemRef == null) return;
 
-        int itemPrice = itemRef.SellPrice();
+        int itemPrice = itemRef.AdjustedSellPrice();
         if (itemPrice > 0)
         {
             var textField = GetField<TextMeshProUGUI>(__instance, "descTMP");
