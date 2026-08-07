@@ -78,7 +78,13 @@ public class Plugin : BaseUnityPlugin
                 "QualityOfLife",
                 "CraftFromContainers",
                 true,
-                "Allows the crafting workbench to use ingredients from chests on your farm"
+                "Allows the crafting workbench to use ingredients from chests on the same map"
+            )),
+            new(typeof(CookFromContainers), Config.Bind(
+                "QualityOfLife",
+                "CookFromContainers",
+                true,
+                "Allows the cooking station to use ingredients from chests on the same map"
             )),
             new(typeof(DailyDialogueIndicator), Config.Bind(
                 "QualityOfLife",

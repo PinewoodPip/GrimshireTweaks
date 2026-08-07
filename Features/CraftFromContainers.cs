@@ -4,19 +4,12 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 using static GrimshireTweaks.Utils;
+using static GrimshireTweaks.CraftingUtils;
 
 namespace GrimshireTweaks;
 
 public static class CraftFromContainers
 {
-    // Utility class for tracking where crafting ingredients are being pulled from.
-    class ItemSource
-    {
-        public Inventory sourceInventory;
-        public Inventory.Slot slot;
-        public int amountToUse;
-    }
-
     static private bool ignoreCanMakeRecipeHook = false;
 
     // Allow crafting recipes using items from containers on the map
@@ -39,7 +32,7 @@ public static class CraftFromContainers
         // If we cannot craft the recipe from items in the inventory,
         // try to pull ingredients from containers on the map
         Inventory playerInventory = GetField<Inventory>(__instance, "playerInventory");
-        List<ItemSource> usedItemSources = CanMakeRecipeUsingContainers(__instance, recipe, numToCraft);
+        List<ItemSource> usedItemSources = CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numToCraft, new List<InventoryItem>());
         if (usedItemSources == null) return true; // Cannot make recipe even with containers
 
         // Craft the item; mostly copy-pasted from original method
@@ -47,11 +40,7 @@ public static class CraftFromContainers
         {
             // Remove used items from the source containers
             Plugin.Logger.LogInfo($"Crafting using items from {usedItemSources.Count} containers");
-            foreach (var itemSource in usedItemSources)
-            {
-                Plugin.Logger.LogInfo($"Using {itemSource.amountToUse} of {itemSource.slot.itemReference.Label} from {(itemSource.sourceInventory == playerInventory ? "player inventory" : "a container")}");
-                itemSource.sourceInventory.RemoveItemAmount(itemSource.slot.itemReference, itemSource.amountToUse);
-            }
+            ConsumeItems(playerInventory, usedItemSources);
 
             // Add crafted item
             playerInventory.AddItem(recipe, 1f, numToCraft);
@@ -88,6 +77,8 @@ public static class CraftFromContainers
     {
         if (GetField<bool>(__instance, "lockRecipeSelected")) return;
 
+        Inventory playerInventory = GetField<Inventory>(__instance, "playerInventory");
+
         // Highlight slots whose item requirements are met
         // through items in containers
         RequiredMaterialSlot[] requiredMaterialSlots = GetField<RequiredMaterialSlot[]>(__instance, "requiredMaterialSlots");
@@ -103,7 +94,7 @@ public static class CraftFromContainers
                 ItemAmount reqItem = recipe.RequiredItems[j];
                 requiredMaterialSlot.Setup(reqItem, __instance);
                 HashSet<InventoryItem> satisfiedIngredients = [];
-                CanMakeRecipeUsingContainers(__instance, recipe, 1, ref satisfiedIngredients);
+                CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, 1, [], ref satisfiedIngredients);
                 if (satisfiedIngredients.Contains(reqItem.Item))
                 {
                     // Highlight the slot in a different color
@@ -115,77 +106,6 @@ public static class CraftFromContainers
         }
     }
 
-    // Checks whether a recipe can be made using items from the player inventory and containers on the map;
-    // if so, will return a list of inventories where items should be fetched from, otherwise null.
-    // satisfiedIngredients will contain the ingredients of which the player has enough items for the recipe, populated regardless of whether the recipe is fully craftable.
-    static List<ItemSource> CanMakeRecipeUsingContainers(CraftingUI __instance, Recipe recipe, int numToCraft, ref HashSet<InventoryItem> satisfiedIngredients)
-    {
-        Inventory playerInventory = GetField<Inventory>(__instance, "playerInventory");
-        List<Inventory> inventories = [playerInventory];
-
-        // Fetch chest inventories
-        // Crafters use a different component (ProcessorObject), so they won't be used
-        var chests = UnityEngine.Object.FindObjectsByType<InteractableChest>(FindObjectsSortMode.None); // The maps are all different scenes, so this won't ex. get mine chests
-        foreach (var chest in chests)
-        {
-            if (chest.gameObject.activeInHierarchy && !chest.isRotten) // Sanity check; "isRotten" is used by mine chests
-            {
-                Inventory chestInventory = chest.GetInventory();
-                inventories.Add(chestInventory);
-            }
-        }
-
-        // Create dict of required items,
-        // considering stack amount to craft & profession bonuses
-        Dictionary<InventoryItem, int> remainingRequiredItems = [];
-        List<ItemSource> usedItemSources = [];
-        foreach (ItemAmount requirement in recipe.RequiredItems)
-        {
-            int amount = CallMethod<int>(__instance, "GetAmountBasedOnSkill", requirement.Amount) * numToCraft;
-            remainingRequiredItems.Add(requirement.Item, amount);
-        }
-
-        // Search through inventories for required items
-        // Items from player inventory will be taken first as it's the first in the list
-        foreach (var inventory in inventories)
-        {
-            Inventory.Slot[] items = GetField<Inventory.Slot[]>(inventory, "itemsInInventory");
-            foreach (Inventory.Slot slot in items)
-            {
-                InventoryItem item = slot.itemReference;
-                if (item == null) continue;
-                int remainingAmount = remainingRequiredItems.GetValueOrDefault(item, 0); // requiredFoodCategoryItems seems unused for normal crafting (only used for cooking recipes)
-                if (remainingAmount > 0)
-                {
-                    // Track where we'd be getting the items from
-                    ItemSource sourcedItem = new ItemSource
-                    {
-                        slot = slot,
-                        sourceInventory = inventory,
-                        amountToUse = Math.Min(remainingAmount, slot.GetStackAmount())
-                    };
-                    usedItemSources.Add(sourcedItem);
-                    remainingRequiredItems[item] -= sourcedItem.amountToUse;
-                    if (remainingRequiredItems[item] == 0)
-                    {
-                        // Requirement for this item is fully satisfied
-                        remainingRequiredItems.Remove(item);
-                        satisfiedIngredients?.Add(item);
-                    }
-                }
-            }
-        }
-
-        // If all ingredients were found, return the inventory sources they come from
-        return remainingRequiredItems.Count == 0 ? usedItemSources : null;
-    }
-    // Overload that discards satisfied ingredients
-    static List<ItemSource> CanMakeRecipeUsingContainers(CraftingUI __instance, Recipe recipe, int numToCraft)
-    {
-        HashSet<InventoryItem> dummyOutList = [];
-        return CanMakeRecipeUsingContainers(__instance, recipe, numToCraft, ref dummyOutList);
-    }
-
     // Consider ingredients in containers for checking if a recipe can be crafted
     [HarmonyPatch(typeof(CraftingUI), "CanMakeRecipe")]
     [HarmonyPostfix]
@@ -193,7 +113,8 @@ public static class CraftFromContainers
     {
         if (!__result && !ignoreCanMakeRecipeHook)
         {
-            List<ItemSource> usedItemSources = CanMakeRecipeUsingContainers(__instance, recipe, numberToCraft);
+            Inventory playerInventory = GetField<Inventory>(__instance, "playerInventory");
+            List<ItemSource> usedItemSources = CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numberToCraft, []);
             __result = usedItemSources != null;
         }
     }
