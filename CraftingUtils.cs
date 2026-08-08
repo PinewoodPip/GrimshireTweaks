@@ -8,11 +8,14 @@ namespace GrimshireTweaks;
 
 public static class CraftingUtils
 {
-    // Utility class for tracking where crafting ingredients are being pulled from.
+    // Utility classes for tracking where crafting ingredients are being pulled from.
     public class ItemSource
     {
         public Inventory sourceInventory;
         public Inventory.Slot slot;
+    }
+    public class ItemSourceUse : ItemSource
+    {
         public int amountToUse;
     }
 
@@ -39,7 +42,7 @@ public static class CraftingUtils
     // Checks whether a recipe can be made using items from the player inventory and containers on the map;
     // if so, will return a list of inventories where items should be fetched from, otherwise null.
     // satisfiedIngredients will contain the ingredients of which the player has enough items for the recipe, populated regardless of whether the recipe is fully craftable.
-    public static List<ItemSource> CanMakeRecipeUsingContainers(Inventory playerInventory, CraftingUI __instance, Recipe recipe, int numToCraft, List<InventoryItem> chosenCategoryItems, ref HashSet<InventoryItem> satisfiedIngredients)
+    public static List<ItemSourceUse> CanMakeRecipeUsingContainers(Inventory playerInventory, CraftingUI __instance, Recipe recipe, int numToCraft, List<InventoryItem> chosenCategoryItems, ref HashSet<InventoryItem> satisfiedIngredients)
     {
         if (chosenCategoryItems.Count != recipe.RequiredFoodCategoryItems.Count)
         {
@@ -52,7 +55,6 @@ public static class CraftingUtils
         // Create dict of required items,
         // considering stack amount to craft & profession bonuses
         Dictionary<InventoryItem, int> remainingRequiredItems = [];
-        List<ItemSource> usedItemSources = [];
         foreach (ItemAmount requirement in recipe.RequiredItems)
         {
             int baseAmount = __instance ? CallMethod<int>(__instance, "GetAmountBasedOnSkill", requirement.Amount) : requirement.Amount;
@@ -83,6 +85,59 @@ public static class CraftingUtils
 
         // Search through inventories for required items
         // Items from player inventory will be taken first as it's the first in the list
+        HashSet<InventoryItem> tempSatisfiedIngredients = [];
+        List<ItemSourceUse> usedItems = [];
+        List<ItemSource> itemSources = GetItemSources((item) =>
+        {
+            int remainingAmount = remainingRequiredItems.GetValueOrDefault(item.slot.itemReference, 0);
+            if (remainingAmount > 0)
+            {
+                int usedAmount = Math.Min(remainingAmount, item.slot.GetStackAmount());
+
+                remainingRequiredItems[item.slot.itemReference] -= usedAmount;
+                usedItems.Add(new ItemSourceUse
+                {
+                    sourceInventory = item.sourceInventory,
+                    slot = item.slot,
+                    amountToUse = usedAmount
+                });
+
+                // Check if requirement for this item is fully satisfied
+                if (remainingRequiredItems[item.slot.itemReference] == 0)
+                {
+                    remainingRequiredItems.Remove(item.slot.itemReference);
+                    tempSatisfiedIngredients.Add(item.slot.itemReference);
+                }
+
+                return true;
+            }
+            return false;
+        });
+
+        if (satisfiedIngredients != null)
+        {
+            foreach (var item in tempSatisfiedIngredients)
+            {
+                satisfiedIngredients.Add(item);
+            }
+        }
+
+        // If all ingredients were found, return the inventory sources they come from
+        return remainingRequiredItems.Count == 0 ? usedItems : null;
+    }
+    // Overload that discards satisfied ingredients
+    public static List<ItemSourceUse> CanMakeRecipeUsingContainers(Inventory playerInventory, CraftingUI __instance, Recipe recipe, int numToCraft, List<InventoryItem> chosenCategoryItems)
+    {
+        HashSet<InventoryItem> dummyOutList = [];
+        return CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numToCraft, chosenCategoryItems, ref dummyOutList);
+    }
+
+    public static List<ItemSource> GetItemSources(Func<ItemSource, bool> filter)
+    {
+        Inventory playerInventory = GameManager.Instance.Player.Inventory;
+        List<Inventory> inventories = GetInventories(playerInventory);
+        List<ItemSource> usedItemSources = [];
+
         foreach (var inventory in inventories)
         {
             Inventory.Slot[] items = GetField<Inventory.Slot[]>(inventory, "itemsInInventory");
@@ -90,36 +145,22 @@ public static class CraftingUtils
             {
                 InventoryItem item = slot.itemReference;
                 if (item == null) continue;
-                int remainingAmount = remainingRequiredItems.GetValueOrDefault(item, 0);
-                if (remainingAmount > 0)
+
+                ItemSource sourcedItem = new ItemSource
                 {
-                    // Track where we'd be getting the items from
-                    ItemSource sourcedItem = new ItemSource
-                    {
-                        slot = slot,
-                        sourceInventory = inventory,
-                        amountToUse = Math.Min(remainingAmount, slot.GetStackAmount())
-                    };
+                    slot = slot,
+                    sourceInventory = inventory
+                };
+
+                // Track where we'd be getting the items from
+                if (filter(sourcedItem))
+                {
                     usedItemSources.Add(sourcedItem);
-                    remainingRequiredItems[item] -= sourcedItem.amountToUse;
-                    if (remainingRequiredItems[item] == 0)
-                    {
-                        // Requirement for this item is fully satisfied
-                        remainingRequiredItems.Remove(item);
-                        satisfiedIngredients?.Add(item);
-                    }
                 }
             }
         }
 
-        // If all ingredients were found, return the inventory sources they come from
-        return remainingRequiredItems.Count == 0 ? usedItemSources : null;
-    }
-    // Overload that discards satisfied ingredients
-    public static List<ItemSource> CanMakeRecipeUsingContainers(Inventory playerInventory, CraftingUI __instance, Recipe recipe, int numToCraft, List<InventoryItem> chosenCategoryItems)
-    {
-        HashSet<InventoryItem> dummyOutList = [];
-        return CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numToCraft, chosenCategoryItems, ref dummyOutList);
+        return usedItemSources;
     }
 
     public static Dictionary<FoodCategoryType, List<InventoryItem>> GetStoredCategoryItems(Inventory playerInventory)
@@ -151,7 +192,7 @@ public static class CraftingUtils
         return categoryItems;
     }
 
-    public static void ConsumeItems(Inventory playerInventory, List<ItemSource> itemSources)
+    public static void ConsumeItems(Inventory playerInventory, List<ItemSourceUse> itemSources)
     {
         foreach (var itemSource in itemSources)
         {

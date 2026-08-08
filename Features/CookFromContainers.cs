@@ -1,20 +1,20 @@
-using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.UI;
 using static GrimshireTweaks.Utils;
 using static GrimshireTweaks.CraftingUtils;
 using System.Linq;
-using Newtonsoft.Json;
 
 namespace GrimshireTweaks;
 
 public static class CookFromContainers
 {
-    static Dictionary<FoodCategoryType, InventoryItem> chosenCategoryItems = [];
+    static Dictionary<IngredientOption, ItemSourceUse> chosenCategoryItems = [];
 
     static bool ignoreSelectItemHook = false;
+    static bool showingIngredientsGrid = false;
+    static IngredientOption currentIngredOption = null;
+    static Dictionary<CursorInventoryOption, ItemSource> currentItemSources = [];
 
     // Patch recipe craft check to account for being able to use store ingredients.
     // This is used for both checking the craftability of unlocked recipes
@@ -57,7 +57,55 @@ public static class CookFromContainers
         // Note: if we've gotten to this point, then we have all ingredients required
         // nothing can change craftability in the middle of using the UI,
         // thus it's not required to re-check it here
-        List<ItemSource> usedItems = CanMakeRecipeUsingContainers(playerInventory, null, recipe, 1, chosenItems);
+
+        // Gather ingredient sources,
+        // both from containers
+        // as well as manual player selections from their inventory
+        List<ItemSourceUse> usedItems = [];
+        int optionIndex = 0;
+        foreach (FoodCategoryType categoryRequirement in recipe.RequiredFoodCategoryItems)
+        {
+            IngredientOption ingredOpt = ingredOptions[optionIndex];
+            ItemSourceUse itemSource;
+            if (ingredOpt.indexOfSelectedItem != 999)
+            {
+                // Manually-selected item from player inventory
+                itemSource = new ItemSourceUse
+                {
+                    slot = playerInventory.Items[ingredOpt.indexOfSelectedItem],
+                    amountToUse = 1,
+                    sourceInventory = playerInventory,  
+                };
+            }
+            else
+            {
+                // Selection from containers
+                itemSource = chosenCategoryItems[ingredOpt];
+            }
+            usedItems.Add(itemSource);
+            optionIndex++;
+        }
+        foreach (ItemAmount itemRequirement in recipe.RequiredItems)
+        {
+            IngredientOption ingredOpt = ingredOptions[optionIndex];
+            ItemSourceUse itemSource;
+            if (ingredOpt.indexOfSelectedItem != 999)
+            {
+                // Manually-selected item from player inventory
+                itemSource = new ItemSourceUse
+                {
+                    slot = playerInventory.Items[ingredOpt.indexOfSelectedItem],
+                    amountToUse = 1,
+                    sourceInventory = playerInventory,  
+                };
+            }
+            else
+            {
+                // Selection from containers
+                itemSource = chosenCategoryItems[ingredOpt];
+            }
+            optionIndex++;
+        }
 
         // Consume items and start cooking; mostly copy-pasted from original code
         CookingProcessor processor = GetField<CookingProcessor>(__instance, "processor");
@@ -98,11 +146,16 @@ public static class CookFromContainers
                 Log("   Trying to autofill category " + category);
 
                 // Use the first stored item of that category
-                var storedCategoryItems = GetStoredCategoryItems(GameManager.Instance.Player.Inventory);
-                if (storedCategoryItems.ContainsKey(category))
+                var categoryItemSources = GetCategoryItemSources(ingredOpt.requiredFoodCategoryType);
+                if (categoryItemSources.Count > 0)
                 {
-                    var categoryItems = storedCategoryItems[category];
-                    ChooseCategoryItem(__instance, ingredOpt, categoryItems.First());
+                    ItemSource itemSource = categoryItemSources[0];
+                    ChooseCategoryItem(__instance, ingredOpt, new ItemSourceUse
+                    {
+                        slot = itemSource.slot,
+                        sourceInventory = itemSource.sourceInventory,
+                        amountToUse = 1,
+                    });
                 }
             }
         }
@@ -113,10 +166,9 @@ public static class CookFromContainers
     [HarmonyPrefix]
     static bool OnCookingUIInteract(CookingUI __instance, UIOption option)
     {
-        if (!option || option is not IngredientOption || !Input.GetKey(KeyCode.LeftShift)) return true;
+        if (!option) return true;
 
         RecipeOption selectedRecipe = GetField<RecipeOption>(__instance, "selectedRecipe");
-        Inventory playerInventory = GameManager.Instance.Player.Inventory;
 
         // Clear category choices when selecting a different recipe
         if (option is RecipeOption recipeOption && recipeOption != null && recipeOption.isDiscovered && recipeOption.recipeRef != selectedRecipe)
@@ -124,48 +176,51 @@ public static class CookFromContainers
             chosenCategoryItems.Clear();
             return true;
         }
-        else if (option is IngredientOption ingredOpt)
+        else if (option is RecipeOption recipeOption2)
         {
-            // Only act on category slots
-            if (ingredOpt.requiredFoodCategoryType != FoodCategoryType.None)
+            // Changing recipes hides the inventory grid, so we must reset bookkeeping
+            ResetIngredientTracking();
+            return true;
+        }
+        else if (option is IngredientOption ingredOpt && Input.GetKey(KeyCode.LeftShift))
+        {
+            // Show grid of stored items valid for that ingredient slot
+            Dictionary<FoodCategoryType, List<InventoryItem>> allCategoryChoices = GetStoredCategoryItems(GameManager.Instance.Player.Inventory);
+            List<InventoryItem> categoryChoices = allCategoryChoices.GetValueOrDefault(ingredOpt.requiredFoodCategoryType);
+            if (categoryChoices != null && categoryChoices.Count > 0)
             {
-                Dictionary<FoodCategoryType, List<InventoryItem>> allCategoryChoices = GetStoredCategoryItems(GameManager.Instance.Player.Inventory);
-                List<InventoryItem> categoryChoices = allCategoryChoices.GetValueOrDefault(ingredOpt.requiredFoodCategoryType);
-                if (categoryChoices != null && categoryChoices.Count > 0)
-                {
-                    InventoryItem manualItem = ingredOpt.indexOfSelectedItem != 999 ? playerInventory.Items[ingredOpt.indexOfSelectedItem].itemReference : null; // If the player had a specific item selected, we'll try to cycle to the next item after it for better UX
-                    InventoryItem currentChoice = manualItem ?? chosenCategoryItems.GetValueOrDefault(ingredOpt.requiredFoodCategoryType, null);
-                    InventoryItem newChoice;
 
-                    // Cycle selected category item
-                    if (currentChoice == null)
-                    {
-                        // Pick first item if the slot was empty before (from either manual or category selection)
-                        newChoice = categoryChoices[0];
-                    }
-                    else
-                    {
-                        // Cycle through possible items
-                        // When cycling past the end, empty the slot instead;
-                        // this has better UX for having cycled all choices,
-                        // especially when there's only 1 ingredient
-                        int currentIndex = categoryChoices.IndexOf(currentChoice);
-                        if (currentIndex + 1 >= categoryChoices.Count)
-                        {
-                            newChoice = null;
-                        }
-                        else
-                        {
-                            newChoice = categoryChoices[currentIndex + 1]; 
-                        }
-                    }
-                    ChooseCategoryItem(__instance, ingredOpt, newChoice);
-                }
+                SetupStoredIngredientsGrid(__instance, ingredOpt);
             }
             return false;
         }
+        else if (option is CursorInventoryOption cursorOption && showingIngredientsGrid)
+        {
+            // InventoryItem item = GetField<InventoryItem>(cursorOption, "myItem");
+            if (currentItemSources.ContainsKey(cursorOption))
+            {
+                ItemSource itemSource = currentItemSources[cursorOption];
+                Log(itemSource.slot.itemReference.name);
+                ChooseCategoryItem(__instance, currentIngredOption, new ItemSourceUse
+                {
+                    slot = itemSource.slot,
+                    sourceInventory = itemSource.sourceInventory,
+                    amountToUse = 1,
+                });
+                CloseStoredIngredients();
+                return false;
+            }
+        }
         
         return true;
+    }
+
+    static void CloseStoredIngredients()
+    {
+        currentItemSources.Clear();
+        currentIngredOption = null;
+        showingIngredientsGrid = false;
+        GameManager.Instance.PlayerInventoryUIGroup.gameObject.SetActive(false);
     }
 
     // Clear our selected items for categories when the player manually selects an item.
@@ -174,9 +229,9 @@ public static class CookFromContainers
     static void AfterIngredientOptionSelectItemFromPlayerInv(IngredientOption __instance, InventoryItem selectedItem, int indx)
     {
         if (ignoreSelectItemHook) return;
-        if (chosenCategoryItems.ContainsKey(__instance.requiredFoodCategoryType))
+        if (chosenCategoryItems.ContainsKey(__instance))
         {
-            chosenCategoryItems.Remove(__instance.requiredFoodCategoryType);
+            chosenCategoryItems.Remove(__instance);
         }
     }
 
@@ -195,7 +250,7 @@ public static class CookFromContainers
                 if (ingredOpt.gameObject.activeInHierarchy && (ingredOpt.requiredFoodCategoryType != FoodCategoryType.None) && ingredOpt.indexOfSelectedItem == 999)
                 {
                     FoodCategoryType category = ingredOpt.requiredFoodCategoryType;
-                    canCraft &= chosenCategoryItems.ContainsKey(category);
+                    canCraft &= chosenCategoryItems.ContainsKey(ingredOpt);
                     if (!canCraft) break;
                 }
             }
@@ -216,26 +271,102 @@ public static class CookFromContainers
     [HarmonyPrefix]
     static bool OnCookingUIOpen(CookingUI __instance, CookingProcessor processor)
     {
-        chosenCategoryItems.Clear();
+        ResetIngredientTracking();
         return true;
     }
 
-    // Selects the item type to use for a category requirement.
-    static void ChooseCategoryItem(CookingUI ui, IngredientOption ingredOption, InventoryItem item)
+    static List<ItemSource> GetCategoryItemSources(FoodCategoryType categoryType)
     {
-        if (item == null)
+        return GetItemSources((itemSource) =>
         {
-            chosenCategoryItems.Remove(ingredOption.requiredFoodCategoryType);
-            ingredOption.RemoveItem();
-            ingredOption.itemImage.color = Color.white;
+            return itemSource.slot.itemReference.FoodCategoryType == categoryType;
+        });
+    }
+
+    static void SetupStoredIngredientsGrid(CookingUI ui, IngredientOption ingredOpt)
+    {
+        List<UIOptionsGroup> optionGroups = GetField<List<UIOptionsGroup>>(ui, "optionGroups");
+		int itemIndex = 0;
+        
+        // Get stored items of this category or specific type,
+        // based on ingredient slot
+        List<ItemSource> itemSources;
+        if (ingredOpt.requiredFoodCategoryType != FoodCategoryType.None)
+        {
+            itemSources = GetCategoryItemSources(ingredOpt.requiredFoodCategoryType);
         }
         else
         {
-            chosenCategoryItems[ingredOption.requiredFoodCategoryType] = item;
+            itemSources = GetItemSources((itemSource) =>
+            {
+                return itemSource.slot.itemReference == ingredOpt.requiredFoodItem;
+            });
+        }
+
+        // Setup slots to show stored ingredients
+        foreach (UIOption uioption in optionGroups[1].Options)
+		{
+			CursorInventoryOption component = uioption.GetComponent<CursorInventoryOption>();
+			if (component != null)
+			{
+                if (itemIndex < itemSources.Count)
+                {
+                    // Show item source
+                    ItemSource itemSource = itemSources[itemIndex];
+                    Inventory.Slot slot = new Inventory.Slot(itemSource.slot.itemReference, itemSource.slot.GetStackAmount(), itemSource.slot.spoilageAverageAmount);
+                    currentItemSources[component] = itemSource;
+                    component.UpdateDisplay(slot, ui);
+                }
+                else
+                {
+                    // Clear remaining slots
+                    component.UpdateDisplay(null, ui);
+                }
+			}
+			itemIndex++;
+		}
+        showingIngredientsGrid = true;
+        currentIngredOption = ingredOpt;
+        GameManager.Instance.PlayerInventoryUIGroup.Setup();
+    }
+
+    // Selects the item type to use for a category requirement.
+    static void ChooseCategoryItem(CookingUI ui, IngredientOption ingredOption, ItemSourceUse itemSource)
+    {
+        if (itemSource == null)
+        {
+            chosenCategoryItems.Remove(ingredOption);
+            ingredOption.RemoveItem();
+            ingredOption.itemImage.color = Color.white;
+        }
+        else if (itemSource.sourceInventory == GameManager.Instance.Player.Inventory)
+        {
+            // Select the item as if it had been picked normally by the player
+            // This better distinguishes which items are coming from containers
+            // and which ones the player will expect to be consumed from their inventory
+            // (so there's no surprises over inventory items disappearing)
+            Inventory.Slot[] invSlots = GameManager.Instance.Player.Inventory.Items;
+            int slotIndex = 999;
+            for (int i = 0; i < invSlots.Length; i++)
+            {
+                Inventory.Slot slot = invSlots[i];
+                if (slot == itemSource.slot)
+                {
+                    slotIndex = i;
+                    break;
+                }
+            }
+            if (slotIndex == 999) LogWarning("Could not find player inventory slot for an item sourced from it? " + itemSource.slot.itemReference.name);
+
+            ingredOption.SelectItemFromPlayerInv(itemSource.slot.itemReference, slotIndex);
+        }
+        else
+        {
+            chosenCategoryItems[ingredOption] = itemSource;
 
             // Show the chosen item in the slot
             ignoreSelectItemHook = true;
-            ingredOption.SelectItemFromPlayerInv(item, 999); // ID must be kept invalid to avoid vanilla code from thinking this slot is properly filled in
+            ingredOption.SelectItemFromPlayerInv(itemSource.slot.itemReference, 999); // ID must be kept invalid to avoid vanilla code from thinking this slot is properly filled in (so that the craft button triggers our logic instead)
             ingredOption.itemImage.color = GameManager.Instance.AvailableGreenColor;
             ignoreSelectItemHook = false;
         }
@@ -254,6 +385,7 @@ public static class CookFromContainers
         for (int i = 0; i < options.Length; i++) // Note: Cooking UI is hardcoded for 4 slots
         {
             Log("Ingredient index " + i);
+
             // Category items are always displayed before specific item requirements
             if (i < recipe.RequiredFoodCategoryItems.Count)
             {
@@ -274,9 +406,9 @@ public static class CookFromContainers
                     return null;
                 }
 
-                if (chosenCategoryItems.ContainsKey(categoryType)) // TODO verify this item is still valid
+                if (chosenCategoryItems.ContainsKey(ingredOpt))
                 {
-                    InventoryItem chosenItem = chosenCategoryItems[categoryType];
+                    InventoryItem chosenItem = chosenCategoryItems[ingredOpt].slot.itemReference;
                     chosenItemsList.Add(chosenItem);
 
                     Log("   Chosen item: " + chosenItem.name);
@@ -299,7 +431,7 @@ public static class CookFromContainers
                 int j = i - recipe.RequiredFoodCategoryItems.Count;
                 ItemAmount requiredItem = recipe.RequiredItems[j];
                 Log("   Is specific item: " + requiredItem.Item.name);
-                if (requiredItem.Amount > 1) Plugin.Logger.LogWarning("Recipe requires >1 of a specific item? Unhandled case");
+                if (requiredItem.Amount > 1) LogWarning("Recipe requires >1 of a specific item? Unhandled case");
 
                 chosenItemsList.Add(requiredItem.Item); // Amount is always 1 for cooking recipes
             }
@@ -311,9 +443,23 @@ public static class CookFromContainers
     {
         return GetChosenItemsList(options, recipe, recipe, anyItem);
     }
+    
+    // Resets bookkeeping for ingredients chosen from containers.
+    static void ResetIngredientTracking()
+    {
+        chosenCategoryItems.Clear();
+        currentItemSources.Clear();
+        showingIngredientsGrid = false;
+        currentIngredOption = null;
+    }
 
     static void Log(string msg)
     {
         Plugin.Logger.LogInfo("[CookFromContainers] " + msg);
+    }
+
+    static void LogWarning(string msg)
+    {
+        Plugin.Logger.LogWarning("[CookFromContainers] " + msg);
     }
 }

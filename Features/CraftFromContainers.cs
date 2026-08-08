@@ -32,7 +32,7 @@ public static class CraftFromContainers
         // If we cannot craft the recipe from items in the inventory,
         // try to pull ingredients from containers on the map
         Inventory playerInventory = GetField<Inventory>(__instance, "playerInventory");
-        List<ItemSource> usedItemSources = CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numToCraft, new List<InventoryItem>());
+        List<ItemSourceUse> usedItemSources = CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numToCraft, new List<InventoryItem>());
         if (usedItemSources == null) return true; // Cannot make recipe even with containers
 
         // Craft the item; mostly copy-pasted from original method
@@ -114,7 +114,7 @@ public static class CraftFromContainers
         if (!__result && !ignoreCanMakeRecipeHook)
         {
             Inventory playerInventory = GetField<Inventory>(__instance, "playerInventory");
-            List<ItemSource> usedItemSources = CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numberToCraft, []);
+            List<ItemSourceUse> usedItemSources = CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numberToCraft, []);
             __result = usedItemSources != null;
         }
     }
