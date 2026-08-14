@@ -42,11 +42,13 @@ public static class CraftingUtils
     // Checks whether a recipe can be made using items from the player inventory and containers on the map;
     // if so, will return a list of inventories where items should be fetched from, otherwise null.
     // satisfiedIngredients will contain the ingredients of which the player has enough items for the recipe, populated regardless of whether the recipe is fully craftable.
-    public static List<ItemSourceUse> CanMakeRecipeUsingContainers(Inventory playerInventory, CraftingUI __instance, Recipe recipe, int numToCraft, List<InventoryItem> chosenCategoryItems, ref HashSet<InventoryItem> satisfiedIngredients)
+    // chosenItems should be provided & filled in for recipes with RequiredFoodCategoryItems - including the required specific items after them as well.
+    public static List<ItemSourceUse> CanMakeRecipeUsingContainers(Inventory playerInventory, CraftingUI __instance, Recipe recipe, int numToCraft, List<InventoryItem> chosenItems, ref HashSet<InventoryItem> satisfiedIngredients)
     {
-        if (chosenCategoryItems.Count != recipe.RequiredFoodCategoryItems.Count)
+        // Sanity check for recipes with category requirements
+        if (chosenItems != null && chosenItems.Count != (recipe.RequiredFoodCategoryItems.Count + recipe.RequiredItems.Count))
         {
-            Plugin.Logger.LogError("Not all categories were chosen? " + chosenCategoryItems.Count + " " + recipe.RequiredFoodCategoryItems.Count);
+            Plugin.Logger.LogError("Not all categories & items were chosen? " + chosenItems.Count + " " + recipe.RequiredFoodCategoryItems.Count + " " + recipe.RequiredItems.Count);
             return null;
         }
 
@@ -55,16 +57,10 @@ public static class CraftingUtils
         // Create dict of required items,
         // considering stack amount to craft & profession bonuses
         Dictionary<InventoryItem, int> remainingRequiredItems = [];
-        foreach (ItemAmount requirement in recipe.RequiredItems)
-        {
-            int baseAmount = __instance ? CallMethod<int>(__instance, "GetAmountBasedOnSkill", requirement.Amount) : requirement.Amount;
-            int amount = baseAmount * numToCraft;
-            remainingRequiredItems.Add(requirement.Item, amount);
-        }
-        for (int i = 0; i < chosenCategoryItems.Count; i++)
+        for (int i = 0; i < recipe.RequiredFoodCategoryItems.Count; i++)
         {
             FoodCategoryType categoryType = recipe.RequiredFoodCategoryItems[i];
-            InventoryItem chosenItemKind = chosenCategoryItems[i];
+            InventoryItem chosenItemKind = chosenItems[i];
             if (chosenItemKind.FoodCategoryType != categoryType)
             {
                 Plugin.Logger.LogError("Item of wrong category was chosen?");
@@ -80,6 +76,20 @@ public static class CraftingUtils
             else
             {
                 remainingRequiredItems.Add(chosenItemKind, amount);
+            }
+        }
+        foreach (ItemAmount requirement in recipe.RequiredItems)
+        {
+            int baseAmount = __instance ? CallMethod<int>(__instance, "GetAmountBasedOnSkill", requirement.Amount) : requirement.Amount;
+            int amount = baseAmount * numToCraft;
+
+            if (remainingRequiredItems.ContainsKey(requirement.Item))
+            {
+                remainingRequiredItems[requirement.Item] += amount;
+            }
+            else
+            {
+                remainingRequiredItems.Add(requirement.Item, amount);
             }
         }
 

@@ -32,7 +32,7 @@ public static class CraftFromContainers
         // If we cannot craft the recipe from items in the inventory,
         // try to pull ingredients from containers on the map
         Inventory playerInventory = GetField<Inventory>(__instance, "playerInventory");
-        List<ItemSourceUse> usedItemSources = CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numToCraft, new List<InventoryItem>());
+        List<ItemSourceUse> usedItemSources = CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numToCraft, null);
         if (usedItemSources == null) return true; // Cannot make recipe even with containers
 
         // Craft the item; mostly copy-pasted from original method
@@ -94,7 +94,7 @@ public static class CraftFromContainers
                 ItemAmount reqItem = recipe.RequiredItems[j];
                 requiredMaterialSlot.Setup(reqItem, __instance);
                 HashSet<InventoryItem> satisfiedIngredients = [];
-                CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, 1, [], ref satisfiedIngredients);
+                CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, 1, null, ref satisfiedIngredients);
                 if (satisfiedIngredients.Contains(reqItem.Item))
                 {
                     // Highlight the slot in a different color
@@ -114,7 +114,7 @@ public static class CraftFromContainers
         if (!__result && !ignoreCanMakeRecipeHook)
         {
             Inventory playerInventory = GetField<Inventory>(__instance, "playerInventory");
-            List<ItemSourceUse> usedItemSources = CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numberToCraft, []);
+            List<ItemSourceUse> usedItemSources = CanMakeRecipeUsingContainers(playerInventory, __instance, recipe, numberToCraft, null);
             __result = usedItemSources != null;
         }
     }
