@@ -27,7 +27,7 @@ public static class CraftFromContainers
         ignoreCanMakeRecipeHook = false;
         if (canMakeWithPlayerInventory) return true;
 
-        Plugin.Logger.LogInfo("Attempting to craft recipe with ingredients from containers...");
+        Plugin.DebugLog("Attempting to craft recipe with ingredients from containers...");
 
         // If we cannot craft the recipe from items in the inventory,
         // try to pull ingredients from containers on the map
@@ -39,7 +39,7 @@ public static class CraftFromContainers
         if (playerInventory.CanAddStack(recipe, numToCraft))
         {
             // Remove used items from the source containers
-            Plugin.Logger.LogInfo($"Crafting using items from {usedItemSources.Count} containers");
+            Plugin.DebugLog($"Crafting using items from {usedItemSources.Count} containers");
             ConsumeItems(playerInventory, usedItemSources);
 
             // Add crafted item

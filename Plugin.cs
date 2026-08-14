@@ -27,6 +27,7 @@ public class Plugin : BaseUnityPlugin
     internal static ConfigEntry<bool> RemindersHUDBirthdayReminder;
     internal static ConfigEntry<bool> RemindersHUDCritterReminder;
     internal static ConfigEntry<bool> RemindersHUDToolReminder;
+    internal static ConfigEntry<bool> DebugLogging;
 
     // Utility class for associating a feature with a bool config setting.
     class ToggleableFeature
@@ -283,6 +284,12 @@ public class Plugin : BaseUnityPlugin
             "",
             "The filename (with \".grimshire\" extension) of the specific save to load on game start. Leave empty to load the most recent save. Requires \"AutoLoadSave\" to be enabled."
         );
+        DebugLogging = Config.Bind(
+            "Dev",
+            "DebugLogging",
+            false,
+            "Enables debug log messages for the mod's features."
+        );
 
         // Load features & patches
         TryLoadFeature(typeof(PluginVersionDisplay));
@@ -308,6 +315,15 @@ public class Plugin : BaseUnityPlugin
         catch (Exception e)
         {
             Logger.LogError($"Error enabling feature {featureClass.Name} (check for a newer version of the mod or report this): {e}");
+        }
+    }
+
+    // Logs a message, if DebugLogging is enabled.
+    public static void DebugLog(string msg)
+    {
+        if (DebugLogging.Value)
+        {
+            Logger.LogInfo(msg);
         }
     }
 }

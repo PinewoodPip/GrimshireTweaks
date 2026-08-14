@@ -57,7 +57,7 @@ public static class QuickStackFromWorld
             GameManager.Instance.PopUpDialogBox.DisplayMsg("No nearby chests to quick-stack to!", 1f);
             return;
         }
-        Plugin.Logger.LogInfo($"Quick-stacking to {nearbyChests.Count} nearby chests.");
+        Plugin.DebugLog($"Quick-stacking to {nearbyChests.Count} nearby chests.");
 
         // Try to stack items from player inventory to chest inventories
         int transferedStacks = 0;
@@ -77,7 +77,7 @@ public static class QuickStackFromWorld
                     // Transfer the stack
                     chestInventory.AddItem(item, slot.spoilageAverageAmount, stacksToMove);
                     playerInventory.RemoveItemAmount(item, stacksToMove);
-                    Plugin.Logger.LogInfo($"Quick-stacked {stacksToMove} of {item.Label} to chest at {chest.transform.position}.");
+                    Plugin.DebugLog($"Quick-stacked {stacksToMove} of {item.Label} to chest at {chest.transform.position}.");
 
                     // Track how many stacks were fully moved
                     // This is somewhat flawed, in the sense that stacks that are only partially moved won't be reported - not sure what the best feedback for this would be

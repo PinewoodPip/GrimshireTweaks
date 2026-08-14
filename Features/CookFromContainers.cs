@@ -455,7 +455,7 @@ public static class CookFromContainers
 
     static void Log(string msg)
     {
-        Plugin.Logger.LogInfo("[CookFromContainers] " + msg);
+        Plugin.DebugLog("[CookFromContainers] " + msg);
     }
 
     static void LogWarning(string msg)

@@ -67,11 +67,11 @@ public static class CraftingUtils
                 return null;
             }
 
+            Plugin.DebugLog("Adding item for category " + categoryType.ToString() + " " + chosenItemKind.name);
             int amount = numToCraft; // Category requirements only ever 1 of the item, unaffected by perks
             if (remainingRequiredItems.ContainsKey(chosenItemKind))
             {
                 remainingRequiredItems[chosenItemKind] += amount;
-                Plugin.Logger.LogInfo("Adding item for category " + categoryType.ToString() + " " + chosenItemKind.name);
             }
             else
             {
@@ -206,7 +206,7 @@ public static class CraftingUtils
     {
         foreach (var itemSource in itemSources)
         {
-            Plugin.Logger.LogInfo($"Using {itemSource.amountToUse} of {itemSource.slot.itemReference.Label} from {(itemSource.sourceInventory == playerInventory ? "player inventory" : "a container")}");
+            Plugin.DebugLog($"Using {itemSource.amountToUse} of {itemSource.slot.itemReference.Label} from {(itemSource.sourceInventory == playerInventory ? "player inventory" : "a container")}");
             itemSource.sourceInventory.RemoveItemAmount(itemSource.slot.itemReference, itemSource.amountToUse);
         }
     }
